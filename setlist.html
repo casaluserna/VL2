@@ -2,180 +2,1286 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scaletta & Preset - VoiceLive 2</title>
-  <style>
-    body { font-family: system-ui, sans-serif; padding: 20px; background: #121212; color: #fff; }
-    .card { background: #1e1e1e; padding: 20px; border-radius: 8px; margin-bottom: 20px; max-width: 500px; }
-    select, button, .btn-upload { padding: 10px; margin: 10px 0; width: 100%; border-radius: 4px; border: none; font-size: 16px; box-sizing: border-box; text-align: center; display: block; }
-    button, .btn-upload { background: #007bff; color: white; cursor: pointer; text-decoration: none; }
-    button:hover, .btn-upload:hover { background: #0056b3; }
-    .status { padding: 8px; font-weight: bold; border-radius: 4px; text-align: center; }
-    .online { background: #28a745; }
-    .offline { background: #dc3545; }
-    a { color: #17a2b8; text-decoration: none; display: inline-block; margin-bottom: 15px; }
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Scaletta & Testi - VoiceLive 2</title>
 
-    /* Input file reale invisibile ma presente nel DOM (fix fondamentale per iOS/iPad) */
-    .hidden-file-input {
-      position: absolute;
-      left: -9999px;
-      opacity: 0;
-      width: 1px;
-      height: 1px;
+  <!-- Firebase SDK Compatibile per Browser -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root { 
+      --bg:#101216; 
+      --card:#191c22; 
+      --card2:#20242c; 
+      --text:#ffffff; 
+      --dim:#9da3ad; 
+      --green:#25d366; 
+      --red:#ff4d4d; 
+      --blue:#3d8bfd;
+      --orange:#f59e0b;
+      --yt-red:#ff0000;
+      --border:#30353f; 
     }
+    * { box-sizing:border-box; }
+    html, body { width: 100%; min-height: 100vh; margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: Arial, sans-serif; }
+    body { padding: 18px; }
+    
+    .container { max-width: 900px; margin: auto; transition: max-width 0.3s ease; }
+    
+    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    a.back { color:var(--blue); text-decoration:none; font-size:14px; }
+    .cloud-badge { font-size:11px; font-weight:bold; padding:4px 8px; border-radius:6px; background:#20242c; border:1px solid var(--border); color:var(--dim); }
+    .cloud-badge.syncing { background:#452205; color:var(--orange); border-color:#78350f; }
+    .cloud-badge.synced { background:#143823; color:#86efac; border-color:#166534; }
+    .cloud-badge.error { background:#451212; color:#fca5a5; border-color:#991b1b; }
+
+    h1 { font-size:22px; margin:0 0 15px; }
+    .section { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:15px; }
+    label { display:block; margin-bottom:6px; color:var(--dim); font-size:13px; }
+    select, input, textarea, button { width:100%; min-height:48px; border-radius:10px; border:1px solid var(--border); background:var(--card2); color:white; font-size:16px; padding:0 12px; }
+    input, textarea { margin-bottom:10px; }
+    textarea { font-family:inherit; padding:10px; resize:vertical; min-height:80px; }
+    button { cursor:pointer; font-weight:bold; margin-top:8px; }
+    button:active { transform:scale(0.98); }
+    
+    .connect { background:#26364f; transition: background 0.3s ease; }
+    .btn-add { background:#214e30; color:#8cffae; border-color:#28452f; }
+    .btn-cancel { background:#3a3f4d; color:#ffffff; border-color:var(--border); display:none; }
+    .btn-lyrics { background:#3d2b56; color:#d8b4fe; border-color:#5b3e82; display:block; text-align:center; text-decoration:none; line-height:48px; margin-bottom:10px; }
+    
+    .backup-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:5px; }
+    .btn-backup { background:#2a3342; border-color:#3b475a; color:#d1d5db; min-height:44px; font-size:14px; }
+
+    .nav-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+    .btn-nav { min-height:55px; font-size:18px; background:#20242c; border-color:#3d8bfd; }
+
+    .song-list-item { display:flex; justify-content:space-between; align-items:center; background:var(--card2); padding:10px 14px; border-radius:8px; margin-bottom:8px; border:1px solid var(--border); }
+    .song-info { font-size:15px; flex-grow:1; margin-right:10px; }
+    .song-preset-badge { color:var(--blue); font-weight:bold; font-size:13px; margin-left:8px; }
+    
+    .action-btns { display:flex; gap:6px; }
+    .btn-edit { background:#284263; color:#7cb3ff; border:none; padding:6px 10px; border-radius:6px; width:auto; min-height:36px; font-size:13px; }
+    .btn-del { background:#512222; color:#ff4d4d; border:none; padding:6px 10px; border-radius:6px; width:auto; min-height:36px; font-size:13px; }
+
+    .notes-controls { display:flex; justify-content:space-between; align-items:center; margin-top:10px; margin-bottom:8px; gap:8px; flex-wrap:wrap; }
+    .font-select { width:auto; min-height:36px; height:36px; font-size:13px; padding:0 8px; }
+
+    .player-container { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+    .player-row { display:flex; gap:8px; align-items:center; }
+    .btn-play { background:#214e30; color:#8cffae; border-color:#28452f; min-height:46px; flex:1; font-size:15px; }
+    .btn-stop { background:#512222; color:#ff4d4d; border-color:#632828; min-height:46px; flex:1; font-size:15px; }
+    .btn-ytmusic { background:#4a1111; color:#ff9999; border-color:#732424; min-height:46px; width:100%; font-size:15px; text-decoration:none; display:flex; align-items:center; justify-content:center; border-radius:10px; font-weight:bold; box-sizing:border-box; }
+
+    .yt-embed-box { margin-top:8px; background:#090b0e; border:1px solid var(--border); border-radius:8px; padding:10px; }
+    .yt-embed-box input { margin-bottom:6px; font-size:14px; min-height:38px; }
+    .yt-timer { display:block; margin:8px 0 4px; padding:8px 12px; border:1px solid #76572d; border-radius:8px; background:#302313; color:#ffd28a; font-family:monospace; font-size:24px; font-weight:bold; letter-spacing:1px; text-align:center; }
+    .yt-player-frame { width:100%; height:120px; border-radius:6px; border:none; display:none; margin-top:6px; }
+
+    .notes-wrapper { display:flex; gap:10px; align-items:stretch; height:60vh; min-height:380px; }
+    
+    .lrc-display { background:#090b0e; border:1px solid var(--border); border-radius:8px; padding:14px; font-size:16px; color:#e2e8f0; height:100%; overflow-y:auto; flex:1; box-sizing:border-box; scroll-behavior:smooth; }
+    .lrc-line { padding:6px 8px; border-radius:6px; transition:color 0.2s ease, opacity 0.2s ease; margin-bottom:4px; opacity:0.6; }
+    .lrc-line.clickable { cursor:pointer; }
+    .lrc-line.clickable:hover { background:#1e293b; }
+    .lrc-line.active { background:#284263; color:#ffffff; font-weight:bold; opacity:1; transform:scale(1.01); }
+
+    .notes-editor { background:#090b0e; border:1px solid var(--border); border-radius:8px; padding:14px; font-size:14px; color:#e2e8f0; height:100%; flex:1; box-sizing:border-box; display:block; overflow-y:auto; font-family:monospace; scroll-behavior:smooth; }
+    .code-line { padding:4px 6px; border-radius:4px; white-space:pre-wrap; word-break:break-all; min-height:24px; opacity:0.5; transition:all 0.2s ease; outline:none; }
+    .code-line:focus { opacity:1; background:#1b222d; border-left:3px solid var(--blue); }
+    .code-line.active { background:#284263; color:#ffffff; font-weight:bold; opacity:1; }
+
+    .scroll-btns { display:flex; flex-direction:column; gap:8px; width:62px; }
+    .btn-scroll { flex:1; min-height:auto; font-size:20px; background:#252d3a; border-color:#3b475a; color:#7cb3ff; padding:0; display:flex; align-items:center; justify-content:center; }
+    .btn-side-play { min-height:58px; font-size:11px; background:#214e30; color:#8cffae; border-color:#28452f; padding:0 4px; margin-top:0; }
+    .column-resizer { flex:0 0 14px; border:2px solid #596577; border-radius:7px; background:#303a4a; cursor:col-resize; touch-action:none; user-select:none; }
+    .column-resizer:hover, .column-resizer.dragging { background:var(--blue); }
+    
+    .btn-fullscreen { background:#1f324d; border-color:#3d8bfd; color:#7cb3ff; min-height:36px; font-size:13px; width:auto; margin-top:0; }
+    .btn-fullscreen-lyrics { background:#1c4d3b; border-color:#25d366; color:#a3ffd2; min-height:44px; font-size:15px; width:100%; margin-top:10px; }
+    .btn-rotate { background:#2c3a2f; border-color:#48634e; color:#95e0a1; min-height:36px; font-size:13px; width:auto; margin-top:0; }
+    .btn-load-lrc { background:#332940; border-color:#5c4775; color:#d8b4fe; min-height:36px; font-size:13px; width:auto; margin-top:0; }
+    .btn-save-notes { background:#1e3a5f; color:#93c5fd; border-color:#2b4c7e; min-height:44px; font-size:14px; margin-top:8px; display:none; }
+    .btn-undo-notes { background:#4a3520; color:#ffd28a; border-color:#76572d; min-height:44px; font-size:14px; margin-top:8px; display:none; }
+
+    /* Modalità Schermo Intero */
+    .fullscreen-mode #notesContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      background: var(--bg);
+      padding: 15px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .fullscreen-mode .notes-wrapper { height: 100%; min-height: 0; display: block; }
+    .fullscreen-mode .notes-editor, .fullscreen-mode .column-resizer { display: none !important; }
+    .btn-close-fullscreen { display: none; background: #512222; color: #ff4d4d; border-color: #632828; min-height: 36px; font-size: 13px; width: auto; margin-top: 0; }
+    .fullscreen-mode .btn-close-fullscreen { display: block; }
+
+    :fullscreen body, :-webkit-full-screen body { padding: 10px !important; overflow-x: hidden; }
+    :fullscreen .container, :-webkit-full-screen .container { max-width: 100% !important; width: 100% !important; margin: 0 !important; }
+
+    .fullscreen-mode .btn-ytmusic, .fullscreen-mode .yt-embed-box label, .fullscreen-mode .yt-embed-box > div { display: none !important; }
+    .fullscreen-mode .player-container { margin-bottom: 5px; }
+    .fullscreen-mode .yt-embed-box { margin-top: 0; padding: 0; border: none; background: transparent; }
+    .fullscreen-mode .yt-player-frame { height: 50px !important; max-width: 200px; margin: 0 auto; }
+    .fullscreen-mode .lrc-display { text-align: center; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; font-size: 26px; overflow-y: auto; padding-top: 24px; width: 100%; height: 100%; box-sizing: border-box; }
+    .fullscreen-mode .lrc-line { text-align: center; width: 100%; max-width: 100%; }
+    .fullscreen-mode .notes-controls { justify-content: center; gap: 12px; }
+
+    body.rotate-90 { transform: rotate(90deg); transform-origin: bottom left; position: absolute; top: -100vw; left: 0; width: 100vh !important; height: 100vw !important; overflow-x: hidden; }
+
+    @media (max-width: 600px) {
+      .notes-wrapper:not(.fullscreen-mode .notes-wrapper) { flex-direction: column; height: auto; }
+      .lrc-display, .notes-editor { height: 250px; }
+      .column-resizer { display:none; }
+      .scroll-btns { flex-direction: row; width: 100%; height: 40px; }
+    }
+
+    .log { height:120px; overflow:auto; background:#090b0e; border-radius:10px; padding:10px; font-family:monospace; font-size:12px; color:#bfc5cf; white-space:pre-wrap; }
   </style>
 </head>
 <body>
 
-  <a href="index.html">← Torna al Menu Principale</a>
-  <h1>Scaletta Canzoni & Preset</h1>
+<div class="container">
+  <div class="header-row">
+    <a href="index.html" class="back">← Menu Principale</a>
+    <span id="cloudStatus" class="cloud-badge">CLOUD: INIT</span>
+  </div>
+  
+  <h1>Scaletta, Preset & Testi</h1>
 
-  <!-- Selezione Interfaccia MIDI (Riconosce Cavo USB o SK-7) -->
-  <div class="card">
-    <h3>1. Configurazione MIDI</h3>
-    <div id="status-badge" class="status offline">MIDI Disconnesso</div>
-    <br>
-    <label for="midi-select">Dispositivo di Uscita (VoiceLive 2 / SK-7):</label>
-    <select id="midi-select" onchange="onOutputChanged(this.value)">
-      <option value="">-- Seleziona Interfaccia --</option>
+  <div class="section" style="display:flex; gap:10px; flex-wrap:wrap;">
+    <button class="btn-fullscreen" style="flex:1;" onclick="toggleAppFullscreen()">⛶ Schermo Intero App</button>
+    <button class="btn-rotate" style="flex:1;" onclick="toggleAppRotation()">🔄 Ruota Schermo</button>
+  </div>
+
+  <div class="section">
+    <label for="midiOutputSelect"><strong>Interfaccia MIDI (Cavo USB / Bluetooth)</strong></label>
+    <select id="midiOutputSelect">
+      <option value="">Ricerca dispositivi...</option>
+    </select>
+    <div id="midiStatus" style="margin-top:8px; font-size:13px; color:var(--dim);">Inizializzazione...</div>
+  </div>
+
+  <div class="section">
+    <label>Canale MIDI</label>
+    <select id="midiChannel">
+      <option value="0">Canale 1</option>
+      <option value="1">Canale 2</option>
+      <option value="2">Canale 3</option>
     </select>
   </div>
 
-  <!-- Caricamento e Selezione Scaletta -->
-  <div class="card">
-    <h3>2. Cambio Preset / Scaletta</h3>
-
-    <!-- Pulsante Carica JSON compatibile iPad (usa un <label> nativo) -->
-    <label for="json-file-input" class="btn-upload">
-      📂 Carica Scaletta (.json)
-    </label>
-    <input 
-      type="file" 
-      id="json-file-input" 
-      class="hidden-file-input" 
-      accept=".json,application/json,text/plain,*/*"
-    >
-
-    <label for="song-list">Seleziona una canzone della scaletta:</label>
-    <select id="song-list" onchange="onSongSelected(this.value)">
-      <option value="">-- Nessuna scaletta caricata --</option>
+  <div class="section">
+    <label>Esecuzione Scaletta Live</label>
+    <select id="songSelect" onchange="onSongChange(this.value)">
+      <option value="">-- Seleziona Brano --</option>
     </select>
 
-    <div id="song-info" style="margin-top: 15px; font-style: italic; color: #aaa;"></div>
+    <div class="nav-grid">
+      <button class="btn-nav" onclick="prevSong()">◀ Precedente</button>
+      <button class="btn-nav" onclick="nextSong()">Successiva ▶</button>
+    </div>
 
-    <hr style="border-color: #333; margin: 15px 0;">
-    <button onclick="playRandomSong()">🎲 Test: Carica Brano a Caso</button>
+    <div style="margin-top:15px;">
+      <a id="lyricsLink" class="btn-lyrics" href="#" target="_blank" style="display:none;">🔍 Cerca testo su Google</a>
+      
+      <div id="notesContainer" style="display:none;">
+        <div class="player-container" id="playerContainer">
+          <div class="player-row">
+            <button id="btnPlay" class="btn-play" onclick="togglePlay()">▶ PLAY</button>
+            <button id="btnStop" class="btn-stop" onclick="stopPlay()">⏹ STOP</button>
+          </div>
+          <a id="ytMusicBtn" class="btn-ytmusic" href="#" target="_blank">🔴 Apri su YT Music / Cerca Brano</a>
+          
+          <div class="yt-embed-box">
+            <label style="margin-bottom:4px;">Link YouTube / YT Music del brano (Incolla e carica per riprodurre in-app):</label>
+            <div style="display:flex; gap:6px;">
+              <input type="text" id="ytUrlInput" placeholder="https://music.youtube.com/watch?v=..." style="margin-bottom:0; flex:1;">
+              <button class="btn-load-lrc" style="margin-top:0; min-height:38px;" onclick="loadYouTubeAudio()">Carica</button>
+            </div>
+            <strong id="ytTimer" class="yt-timer" aria-label="Timer di esecuzione">00:00.00</strong>
+            <div id="ytPlayerContainer"></div>
+          </div>
+        </div>
+
+        <div class="notes-controls">
+          <button class="btn-load-lrc" onclick="document.getElementById('lrcFileInput').click()">📂 Carica .LRC</button>
+          <input type="file" id="lrcFileInput" accept=".lrc,.txt" style="display:none;" onchange="handleLrcFileUpload(event)">
+
+          <select id="timeOffsetSelect" class="font-select" style="background:#283545; border-color:#3d8bfd;" onchange="applyTimeOffset(this.value)">
+            <option value="0" selected>Shift Timing: 0s</option>
+            <option value="-5.0">-5.0s (Anticipa)</option>
+            <option value="-4.5">-4.5s</option>
+            <option value="-4.0">-4.0s</option>
+            <option value="-3.5">-3.5s</option>
+            <option value="-3.0">-3.0s</option>
+            <option value="-2.5">-2.5s</option>
+            <option value="-2.0">-2.0s</option>
+            <option value="-1.5">-1.5s</option>
+            <option value="-1.0">-1.0s</option>
+            <option value="-0.5">-0.5s</option>
+            <option value="+0.5">+0.5s (Ritarda)</option>
+            <option value="+1.0">+1.0s</option>
+            <option value="+1.5">+1.5s</option>
+            <option value="+2.0">+2.0s</option>
+            <option value="+2.5">+2.5s</option>
+            <option value="+3.0">+3.0s</option>
+            <option value="+3.5">+3.5s</option>
+            <option value="+4.0">+4.0s</option>
+            <option value="+4.5">+4.5s</option>
+            <option value="+5.0">+5.0s</option>
+          </select>
+
+          <select id="fontSizeSelect" class="font-select" onchange="changeFontSize(this.value)">
+            <option value="14px">Dim.: Piccola</option>
+            <option value="16px" selected>Dim.: Normale</option>
+            <option value="20px">Dim.: Grande</option>
+            <option value="26px">Dim.: Molto Grande</option>
+            <option value="32px">Dim.: Gigante</option>
+          </select>
+
+          <button class="btn-close-fullscreen" onclick="toggleLyricsFullscreen()">❌ Chiudi Schermo Intero</button>
+        </div>
+
+        <div class="notes-wrapper">
+          <div id="lrcDisplay" class="lrc-display"></div>
+          <div id="columnResizer" class="column-resizer" role="separator" aria-label="Ridimensiona colonne lyrics" aria-orientation="vertical" tabindex="0"></div>
+          <div id="codeEditor" class="notes-editor"></div>
+
+          <div class="scroll-btns">
+            <button id="btnSidePlay" class="btn-side-play" onclick="togglePlay()" aria-label="Riproduci testo">▶ PLAY</button>
+            <button class="btn-scroll" onclick="scrollNotes('up')">▲</button>
+            <button class="btn-scroll" onclick="scrollNotes('down')">▼</button>
+          </div>
+        </div>
+
+        <button id="btnSaveLiveNotes" class="btn-save-notes" onclick="saveLiveNotes()">💾 Salva Codice LRC / Note Modificate</button>
+        <button id="btnUndoLiveNotes" class="btn-undo-notes" onclick="undoLiveNotes()">↶ Annulla Modifiche LRC</button>
+        <button id="btnFullscreenLyrics" class="btn-fullscreen-lyrics" onclick="toggleLyricsFullscreen()">🖥️ Testo a Schermo Intero</button>
+      </div>
+    </div>
   </div>
 
-  <!-- Inclusione del Modulo MIDI -->
-  <script src="midi-core.js"></script>
-  <script>
-    // Lista di brani di prova per il test a caso
-    const sampleSongs = [
-      { title: "Sweet Child O' Mine", preset: 5 },
-      { title: "Hallelujah", preset: 12 },
-      { title: "Wonderwall", preset: 24 },
-      { title: "Superstition", preset: 88 },
-      { title: "Uptown Funk", preset: 130 }
-    ];
+  <div class="section">
+    <label id="formLabel">Aggiungi Nuovo Brano</label>
+    <input type="text" id="newTitle" placeholder="Titolo Canzone ed Artista (es. Hotel California - Eagles)">
+    <input type="number" id="newPreset" placeholder="Numero Preset VoiceLive (es. 42)" min="1" max="384">
+    <input type="text" id="newYtUrl" placeholder="Link YouTube / YT Music (opzionale)">
+    
+    <div style="margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+      <label style="margin:0;">Testo / Note (Supporta file .LRC):</label>
+      <button class="btn-load-lrc" style="padding:4px 8px; min-height:28px;" onclick="document.getElementById('newFormLrcFile').click()">📂 Importa File .LRC</button>
+      <input type="file" id="newFormLrcFile" accept=".lrc,.txt" style="display:none;" onchange="handleNewFormLrcUpload(event)">
+    </div>
 
-    // Inizializzazione pagina MIDI
-    document.addEventListener("DOMContentLoaded", async () => {
-      const ok = await initMIDI((devices) => {
-        const select = document.getElementById("midi-select");
-        select.innerHTML = '<option value="">-- Seleziona Interfaccia --</option>';
-        devices.forEach(dev => {
-          const opt = document.createElement("option");
-          opt.value = dev.id;
-          opt.textContent = dev.name;
-          select.appendChild(opt);
-        });
-      });
-    });
+    <textarea id="newNotes" placeholder="Note o testo in formato .lrc [00:10.00] Inizio canto..."></textarea>
+    
+    <button id="btnSave" class="btn-add" onclick="saveSong()">+ Salva in Scaletta</button>
+    <button id="btnCancelEdit" class="btn-cancel" onclick="cancelEdit()">Annulla Modifica</button>
+  </div>
 
-    function onOutputChanged(deviceId) {
-      selectMIDIOutput(deviceId);
-      const badge = document.getElementById("status-badge");
-      if (deviceId) {
-        badge.textContent = "MIDI ONLINE";
-        badge.className = "status online";
-      } else {
-        badge.textContent = "MIDI Disconnesso";
-        badge.className = "status offline";
+  <div class="section">
+    <label>Brani Memorizzati</label>
+    <div id="songsContainer"></div>
+
+    <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+
+    <label>Backup & Ripristino Scaletta</label>
+    <div class="backup-grid">
+      <button class="btn-backup" onclick="exportSetlist()">💾 Esporta (.JSON)</button>
+      <button class="btn-backup" onclick="document.getElementById('importFile').click()">📂 Importa (.JSON)</button>
+    </div>
+    <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importSetlist(event)">
+  </div>
+
+  <div class="section">
+    <label>LOG MIDI</label>
+    <div id="log" class="log"></div>
+  </div>
+</div>
+
+<script src="midi-core.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script src="midi-manager.js"></script>
+<script>
+  // ==========================================
+  // CONFIGURAZIONE FIREBASE CLOUD
+  // ==========================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyBVRtflltd9by74SWaSiC4OjTeojurAs4M",
+    authDomain: "voicelive2.firebaseapp.com",
+    projectId: "voicelive2",
+    storageBucket: "voicelive2.firebasestorage.app",
+    messagingSenderId: "196560614823",
+    appId: "1:196560614823:web:2e2465ec3c095785653282"
+  };
+
+  let db = null;
+  let cloudDocRef = null;
+  let cloudSaveTimer = null;
+
+  function initFirebase() {
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      cloudDocRef = db.collection("setlists").doc("live_voicelive_session");
+      setCloudStatus("CLOUD: ONLINE", "synced");
+    } catch (err) {
+      console.error("Errore inizializzazione Firebase:", err);
+      setCloudStatus("CLOUD: ERRORE INIT", "error");
+    }
+  }
+
+  function setCloudStatus(text, statusClass) {
+    const el = document.getElementById("cloudStatus");
+    if (el) {
+      el.textContent = text;
+      el.className = "cloud-badge " + (statusClass || "");
+    }
+  }
+
+  function triggerCloudAutoSave() {
+    if (!cloudDocRef) return;
+    setCloudStatus("CLOUD: SALVATAGGIO...", "syncing");
+
+    if (cloudSaveTimer) clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(async () => {
+      try {
+        await cloudDocRef.set({
+          songs: songs,
+          lastUpdated: new Date().toISOString()
+        }, { merge: true });
+        setCloudStatus("CLOUD: SINCRONIZZATO", "synced");
+      } catch (err) {
+        console.error("Errore salvataggio Cloud:", err);
+        setCloudStatus("CLOUD: ERRORE RETE", "error");
+      }
+    }, 1500);
+  }
+
+  function log(msg) {
+    const logBox = document.getElementById("log");
+    if (logBox) {
+      const time = new Date().toLocaleTimeString();
+      logBox.innerHTML = `[${time}] ${msg}\n` + logBox.innerHTML;
+    }
+  }
+
+  // ==========================================
+  // STATO APPLICAZIONE & VARIABILI
+  // ==========================================
+  let songs = [];
+  let editingIndex = null;
+  let activeSongIndex = null;
+
+  let parsedLrc = [];
+  let isPlaying = false;
+  let startTime = 0;
+  let timerInterval = null;
+  let ytPlayer = null;
+  let isResizingColumns = false;
+  let isEditingLrc = false;
+
+  const lrcAdvanceSeconds = 0;
+
+  window.addEventListener("load", async () => {
+    initFirebase();
+    await loadSongsFromStorage();
+    setupColumnResizer();
+    MidiManager.init("midiOutputSelect", "midiStatus");
+  });
+
+  async function loadSongsFromStorage() {
+    setCloudStatus("CLOUD: CONTROLLO...", "syncing");
+
+    // 1. Prova prima a recuperare dal Cloud Firestore
+    if (cloudDocRef) {
+      try {
+        const doc = await cloudDocRef.get();
+        if (doc.exists && Array.isArray(doc.data().songs) && doc.data().songs.length > 0) {
+          songs = doc.data().songs;
+          localStorage.setItem("voicelive_setlist", JSON.stringify(songs));
+          renderSongsUI();
+          setCloudStatus("CLOUD: SINCRONIZZATO", "synced");
+          log(`Caricati ${songs.length} brani dal Cloud.`);
+          return;
+        } else {
+          log("Nessuna scaletta sul Cloud. Controllo memoria locale...");
+        }
+      } catch (err) {
+        console.warn("Errore Cloud, fallback su memoria locale:", err);
+        setCloudStatus("CLOUD: OFFLINE", "error");
       }
     }
 
-    function onSongSelected(presetNumber) {
-      if (!presetNumber) return;
-      const num = parseInt(presetNumber, 10);
-      sendPresetChange(num);
-      document.getElementById("song-info").textContent = `Preset ${num} inviato al VoiceLive 2.`;
-    }
-
-    function playRandomSong() {
-      const randomSong = sampleSongs[Math.floor(Math.random() * sampleSongs.length)];
-      sendPresetChange(randomSong.preset);
-      document.getElementById("song-info").innerHTML = 
-        `🎵 Canzone Casuale: <b>${randomSong.title}</b><br>Preset inviato: <b>${randomSong.preset}</b>`;
-    }
-
-    // --- GESTIONE CARICAMENTO FILE JSON (FIX IPAD / WEB MIDI BROWSER) ---
-    const jsonInput = document.getElementById("json-file-input");
-
-    // Reset del valore al tap: permette di ricaricare lo stesso file se modificato
-    jsonInput.addEventListener("click", function() {
-      this.value = null;
-    });
-
-    jsonInput.addEventListener("change", function(e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-
-      const songInfo = document.getElementById("song-info");
-      songInfo.textContent = `Caricamento di "${file.name}"...`;
-
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          const content = evt.target.result;
-          const data = JSON.parse(content);
-
-          // Supporta array diretto [...] o oggetti come { songs: [...] } o { scaletta: [...] }
-          const list = Array.isArray(data) ? data : (data.songs || data.scaletta || []);
-
-          if (!list || list.length === 0) {
-            alert("Il file JSON non contiene un elenco valido di canzoni.");
-            return;
-          }
-
-          // Popoliamo il menu a tendina <select id="song-list">
-          const songSelect = document.getElementById("song-list");
-          songSelect.innerHTML = '<option value="">-- Scegli Canzone --</option>';
-
-          list.forEach((item, index) => {
-            const opt = document.createElement("option");
-            const title = item.title || item.nome || item.brano || `Brano ${index + 1}`;
-            const preset = item.preset || item.pc || (index + 1);
-
-            opt.value = preset;
-            opt.textContent = `${index + 1}. ${title} (Preset ${preset})`;
-            songSelect.appendChild(opt);
-          });
-
-          songInfo.innerHTML = `✅ Scaletta <b>"${file.name}"</b> caricata: <b>${list.length} brani</b> pronti.`;
-
-        } catch (err) {
-          alert("Errore nel file JSON:\n" + err.message);
-          songInfo.textContent = "Errore durante il caricamento del file JSON.";
+    // 2. Se il Cloud è vuoto o offline, controlla il localStorage
+    const saved = localStorage.getItem("voicelive_setlist");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          songs = parsed;
+          renderSongsUI();
+          log(`Caricati ${songs.length} brani dalla memoria locale.`);
+          return;
         }
-      };
+      } catch (e) {
+        songs = [];
+      }
+    }
 
-      reader.onerror = function() {
-        alert("Errore di lettura del file da parte del browser iOS.");
-      };
+    // 3. Se anche localStorage è vuoto: carica scaletta_default.json dal repository
+    try {
+      log("Primo avvio: carico scaletta predefinita (.json)...");
+      const res = await fetch(`scaletta_default.json?t=${Date.now()}`);
+      if (res.ok) {
+        const defaultData = await res.json();
+        if (Array.isArray(defaultData) && defaultData.length > 0) {
+          songs = defaultData;
+          saveSongsToStorage();
+          renderSongsUI();
+          log(`Scaletta predefinita caricata (${songs.length} brani).`);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("Nessun scaletta_default.json trovato nel repository.");
+    }
 
-      reader.readAsText(file);
+    // 4. Fallback estremo se non trova nulla
+    songs = [
+      { 
+        title: "Hotel California - Eagles", 
+        preset: 42, 
+        ytUrl: "", 
+        notes: "[00:02.00]Intro chitarra...\n[00:08.50]On a dark desert highway\n[00:12.00]Cool wind in my hair" 
+      }
+    ];
+    saveSongsToStorage();
+    renderSongsUI();
+  }
+
+  function saveSongsToStorage() {
+    localStorage.setItem("voicelive_setlist", JSON.stringify(songs));
+    triggerCloudAutoSave();
+  }
+
+  function renderSongsUI() {
+    const select = document.getElementById("songSelect");
+    const container = document.getElementById("songsContainer");
+
+    select.innerHTML = '<option value="">-- Seleziona Brano --</option>';
+    container.innerHTML = "";
+
+    if (songs.length === 0) {
+      container.innerHTML = '<div style="color:var(--dim); font-size:13px;">Nessun brano in scaletta.</div>';
+      return;
+    }
+
+    songs.forEach((song, index) => {
+      const opt = document.createElement("option");
+      opt.value = index;
+      opt.textContent = `${index + 1}. ${song.title} (Preset ${song.preset})`;
+      select.appendChild(opt);
+
+      const div = document.createElement("div");
+      div.className = "song-list-item";
+      div.innerHTML = `
+        <div class="song-info">
+          <b>${index + 1}. ${song.title}</b>
+          <span class="song-preset-badge">Preset ${song.preset}</span>
+        </div>
+        <div class="action-btns">
+          <button class="btn-edit" onclick="editSong(${index})">Modifica</button>
+          <button class="btn-del" onclick="deleteSong(${index})">Elimina</button>
+        </div>
+      `;
+      container.appendChild(div);
     });
-  </script>
+  }
+
+  function toggleLyricsFullscreen() {
+    document.body.classList.toggle("fullscreen-mode");
+  }
+
+  function toggleAppFullscreen() {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      const docEl = document.documentElement;
+      if (docEl.requestFullscreen) docEl.requestFullscreen();
+      else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+    } else {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+  }
+
+  async function toggleAppRotation() {
+    if (screen.orientation && screen.orientation.lock) {
+      try {
+        if (screen.orientation.type.startsWith("portrait")) {
+          await screen.orientation.lock("landscape");
+        } else {
+          await screen.orientation.lock("portrait");
+        }
+        return;
+      } catch (err) {}
+    }
+    document.body.classList.toggle("rotate-90");
+  }
+
+  function handleLrcFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const content = e.target.result;
+      document.getElementById("timeOffsetSelect").value = "0";
+      parsedLrc = parseLRC(content);
+      renderLrcDisplay();
+      renderCodeEditor(content);
+      onNotesInput();
+      log(`File .LRC caricato: ${file.name}`);
+      event.target.value = "";
+    };
+    reader.readAsText(file);
+  }
+
+  function handleNewFormLrcUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById("newNotes").value = e.target.result;
+      log(`File .LRC inserito nel modulo: ${file.name}`);
+      event.target.value = "";
+    };
+    reader.readAsText(file);
+  }
+
+  function saveSong() {
+    const titleInput = document.getElementById("newTitle");
+    const presetInput = document.getElementById("newPreset");
+    const ytUrlInput = document.getElementById("newYtUrl");
+    const notesInput = document.getElementById("newNotes");
+
+    const title = titleInput.value.trim();
+    const preset = parseInt(presetInput.value, 10);
+    const ytUrl = ytUrlInput.value.trim();
+    const notes = notesInput.value.trim();
+
+    if (!title || isNaN(preset) || preset < 1 || preset > 384) {
+      alert("Inserisci un titolo ed un preset valido (1-384).");
+      return;
+    }
+
+    if (editingIndex !== null) {
+      songs[editingIndex] = { title: title, preset: preset, ytUrl: ytUrl, notes: notes };
+      log(`Aggiornato: ${title} (Preset ${preset})`);
+    } else {
+      songs.push({ title: title, preset: preset, ytUrl: ytUrl, notes: notes });
+      log(`Aggiunto: ${title} (Preset ${preset})`);
+    }
+
+    saveSongsToStorage();
+    renderSongsUI();
+    resetForm();
+  }
+
+  function editSong(index) {
+    editingIndex = index;
+    const song = songs[index];
+
+    document.getElementById("newTitle").value = song.title;
+    document.getElementById("newPreset").value = song.preset;
+    document.getElementById("newYtUrl").value = song.ytUrl || "";
+    document.getElementById("newNotes").value = song.notes || "";
+
+    document.getElementById("formLabel").textContent = `Modifica Brano #${index + 1}`;
+    document.getElementById("btnSave").textContent = "✓ Salva Modifiche";
+    document.getElementById("btnCancelEdit").style.display = "block";
+
+    document.getElementById("formLabel").scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function cancelEdit() {
+    resetForm();
+  }
+
+  function resetForm() {
+    editingIndex = null;
+    document.getElementById("newTitle").value = "";
+    document.getElementById("newPreset").value = "";
+    document.getElementById("newYtUrl").value = "";
+    document.getElementById("newNotes").value = "";
+
+    document.getElementById("formLabel").textContent = "Aggiungi Nuovo Brano";
+    document.getElementById("btnSave").textContent = "+ Salva in Scaletta";
+    document.getElementById("btnCancelEdit").style.display = "none";
+  }
+
+  function deleteSong(index) {
+    if (confirm(`Rimuovere "${songs[index].title}"?`)) {
+      songs.splice(index, 1);
+      saveSongsToStorage();
+      renderSongsUI();
+      if (editingIndex === index) resetForm();
+    }
+  }
+
+  async function exportSetlist() {
+    if (songs.length === 0) {
+      alert("La scaletta è vuota, non c'è nulla da esportare.");
+      return;
+    }
+
+    const jsonStr = JSON.stringify(songs, null, 2);
+    const date = new Date().toISOString().slice(0, 10);
+    const fileName = `scaletta_voicelive_${date}.json`;
+    const blob = new Blob([jsonStr], { type: "application/json" });
+
+    if (navigator.canShare && navigator.share) {
+      try {
+        const file = new File([blob], fileName, { type: "application/json" });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Esporta Scaletta VoiceLive',
+            files: [file]
+          });
+          log("Scaletta salvata o condivisa con successo.");
+          return;
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') console.error(err);
+        else return;
+      }
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    log("Scaletta esportata nella cartella Download.");
+  }
+
+  function importSetlist(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const importedData = JSON.parse(e.target.result);
+        if (Array.isArray(importedData)) {
+          if (confirm("L'importazione sostituirà la tua scaletta attuale. Vuoi continuare?")) {
+            songs = importedData;
+            saveSongsToStorage();
+            renderSongsUI();
+            resetForm();
+            alert("Scaletta importata con successo!");
+          }
+        } else {
+          alert("Il file non contiene una scaletta valida.");
+        }
+      } catch (err) {
+        alert("Errore nella lettura del file JSON: " + err.message);
+      }
+      event.target.value = "";
+    };
+    reader.readAsText(file);
+  }
+
+  function parseLRC(lrcText) {
+    const lines = lrcText.split('\n');
+    const result = [];
+    const timeRegex = /\[(\d{2}):(\d{2})(?:\.(\d{1,3}))?\]/;
+
+    lines.forEach((line, index) => {
+      const match = timeRegex.exec(line);
+      if (match) {
+        const min = parseInt(match[1], 10);
+        const sec = parseInt(match[2], 10);
+        const ms = match[3] ? parseInt(match[3].padEnd(3, '0'), 10) : 0;
+        const totalTime = min * 60 + sec + ms / 1000;
+        const text = line.replace(timeRegex, '').trim();
+
+        result.push({ time: totalTime, text: text || '...', rawLine: line, id: index });
+      } else {
+        result.push({ time: null, text: line.trim(), rawLine: line, id: index });
+      }
+    });
+
+    return result.sort((a, b) => (a.time === null ? 1 : b.time === null ? -1 : a.time - b.time));
+  }
+
+  function applyTimeOffset(offsetSecStr) {
+    const offset = parseFloat(offsetSecStr);
+    if (isNaN(offset) || offset === 0) return;
+
+    const rawContent = getRawContentFromEditor();
+    const lines = rawContent.split('\n');
+    const timeRegex = /\[(\d{2}):(\d{2})(?:\.(\d{1,3}))?\]/;
+    const updatedLines = [];
+
+    lines.forEach(line => {
+      const match = timeRegex.exec(line);
+      if (match) {
+        const min = parseInt(match[1], 10);
+        const sec = parseInt(match[2], 10);
+        const ms = match[3] ? parseInt(match[3].padEnd(3, '0'), 10) : 0;
+        
+        let totalTime = min * 60 + sec + ms / 1000;
+        totalTime = Math.max(0, totalTime + offset);
+
+        const newMin = Math.floor(totalTime / 60);
+        const newSec = Math.floor(totalTime % 60);
+        const newMs = Math.round((totalTime % 1) * 100);
+
+        const formattedTime = `[${String(newMin).padStart(2, '0')}:${String(newSec).padStart(2, '0')}.${String(newMs).padStart(2, '0')}]`;
+        const textOnly = line.replace(timeRegex, '');
+        updatedLines.push(formattedTime + textOnly);
+      } else {
+        updatedLines.push(line);
+      }
+    });
+
+    const newText = updatedLines.join('\n');
+    parsedLrc = parseLRC(newText);
+    renderLrcDisplay();
+    renderCodeEditor(newText);
+    
+    if (activeSongIndex !== null) {
+      songs[activeSongIndex].notes = newText;
+      saveSongsToStorage();
+    }
+    
+    document.getElementById("btnSaveLiveNotes").style.display = "block";
+    document.getElementById("timeOffsetSelect").value = "0";
+    log(`Shift timing applicato: ${offset > 0 ? '+' : ''}${offset}s`);
+  }
+
+  function renderLrcDisplay() {
+    const display = document.getElementById("lrcDisplay");
+    display.innerHTML = "";
+    display.scrollTop = 0;
+
+    if (parsedLrc.length === 0) {
+      display.innerHTML = '<div style="color:var(--dim);">Nessun testo presente.</div>';
+      return;
+    }
+
+    parsedLrc.forEach((item, idx) => {
+      const div = document.createElement("div");
+      div.className = "lrc-line";
+      div.id = `lrc-line-${idx}`;
+      div.textContent = item.text;
+
+      if (item.time !== null) {
+        div.classList.add("clickable");
+        div.onclick = () => jumpToLrcTime(item.time);
+      }
+
+      display.appendChild(div);
+    });
+  }
+
+  function renderCodeEditor(rawText) {
+    const editor = document.getElementById("codeEditor");
+    editor.innerHTML = "";
+    editor.scrollTop = 0;
+
+    const lines = rawText ? rawText.split('\n') : [];
+    if (lines.length === 0) {
+      editor.innerHTML = '<div class="code-line" contenteditable="true" oninput="onNotesInput()"></div>';
+      return;
+    }
+
+    lines.forEach((lineText, idx) => {
+      const div = document.createElement("div");
+      div.className = "code-line";
+      div.contentEditable = "true";
+      div.textContent = lineText || "";
+      div.oninput = () => onNotesInput();
+
+      if (lineText.trim() !== "") {
+        const lyricIndex = parsedLrc.findIndex(item => item.id === idx);
+        if (lyricIndex !== -1) {
+          div.id = `code-line-${lyricIndex}`;
+          if (parsedLrc[lyricIndex].time !== null) {
+            div.classList.add("clickable");
+            div.onclick = () => jumpToLrcTime(parsedLrc[lyricIndex].time);
+          }
+        }
+      }
+
+      editor.appendChild(div);
+    });
+  }
+
+  function getRawContentFromEditor() {
+    const lines = document.querySelectorAll('#codeEditor .code-line');
+    let textArr = [];
+    lines.forEach(line => {
+      textArr.push(line.textContent);
+    });
+    return textArr.join('\n');
+  }
+
+  function jumpToLrcTime(seconds) {
+    window.currentLrcTime = seconds;
+    startTime = Date.now() - seconds * 1000;
+
+    if (ytPlayer && typeof ytPlayer.seekTo === 'function') {
+      try {
+        ytPlayer.seekTo(seconds, true);
+        if (typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
+        if (typeof ytPlayer.setVolume === 'function') ytPlayer.setVolume(100);
+        ytPlayer.playVideo();
+      } catch(e) {}
+    }
+
+    if (!isPlaying) {
+      startPlaySync();
+    } else {
+      updateLrcHighlight(seconds);
+    }
+  }
+
+  function extractYouTubeId(url) {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  }
+
+  function loadYouTubeAudio() {
+    if (activeSongIndex === null) return;
+    const ytUrl = document.getElementById("ytUrlInput").value.trim();
+    songs[activeSongIndex].ytUrl = ytUrl;
+    saveSongsToStorage();
+
+    const videoId = extractYouTubeId(ytUrl);
+    const container = document.getElementById("ytPlayerContainer");
+    container.innerHTML = "";
+
+    if (videoId) {
+      const iframe = document.createElement("iframe");
+      iframe.id = "ytIframePlayer";
+      iframe.className = "yt-player-frame";
+      iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&playsinline=1&autoplay=0`;
+      iframe.allow = "autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; accelerometer";
+      iframe.style.display = "block";
+      container.appendChild(iframe);
+      
+      try {
+        ytPlayer = new YT.Player('ytIframePlayer', {
+          events: { 'onStateChange': onPlayerStateChange }
+        });
+      } catch(e){}
+      
+      log("Video/Audio YouTube caricato nel brano.");
+    } else {
+      alert("Link YouTube non valido.");
+    }
+  }
+
+  function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.PLAYING) {
+      if (!isPlaying) startPlaySync();
+    } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+      if (isPlaying) pausePlay();
+    }
+  }
+
+  function formatPlaybackTime(seconds) {
+    const safeSeconds = Math.max(0, Number.isFinite(seconds) ? seconds : 0);
+    const minutes = Math.floor(safeSeconds / 60);
+    const remainingSeconds = Math.floor(safeSeconds % 60);
+    const centiseconds = Math.floor((safeSeconds % 1) * 100);
+    return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}.${String(centiseconds).padStart(2, "0")}`;
+  }
+
+  function updatePlaybackTimer(seconds) {
+    const timer = document.getElementById("ytTimer");
+    if (timer) timer.textContent = formatPlaybackTime(seconds);
+  }
+
+  function togglePlay() {
+    if (isPlaying) {
+      pausePlay();
+      if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
+        try { ytPlayer.pauseVideo(); } catch(e){}
+      }
+    } else {
+      if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+        try { 
+          if (typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
+          if (typeof ytPlayer.setVolume === 'function') ytPlayer.setVolume(100);
+          ytPlayer.playVideo(); 
+        } catch(e){}
+      }
+      startPlaySync();
+    }
+  }
+
+  function updatePlayButtons() {
+    const label = isPlaying ? "❚❚ PAUSA" : "▶ PLAY";
+    const background = isPlaying ? "#8c6b21" : "#214e30";
+    ["btnPlay", "btnSidePlay"].forEach((id) => {
+      const button = document.getElementById(id);
+      if (button) {
+        button.textContent = label;
+        button.style.background = background;
+        button.setAttribute("aria-label", isPlaying ? "Metti in pausa il testo" : "Riproduci testo");
+      }
+    });
+  }
+
+  function startPlaySync() {
+    if (parsedLrc.length === 0) return;
+    isPlaying = true;
+    updatePlayButtons();
+
+    let currentSec = 0;
+    if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+      try { currentSec = ytPlayer.getCurrentTime(); } catch(e){}
+    } else {
+      currentSec = window.currentLrcTime || 0;
+    }
+
+    const now = Date.now();
+    startTime = now - currentSec * 1000;
+
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      let currentTime = (Date.now() - startTime) / 1000;
+      if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+        try {
+          const ytTime = ytPlayer.getCurrentTime();
+          if (Math.abs(ytTime - currentTime) > 0.8) {
+            currentTime = ytTime;
+            startTime = Date.now() - currentTime * 1000;
+          }
+        } catch(e){}
+      }
+      window.currentLrcTime = currentTime;
+      updatePlaybackTimer(currentTime);
+      updateLrcHighlight(currentTime);
+    }, 100);
+  }
+
+  function pausePlay() {
+    capturePlaybackPosition();
+    isPlaying = false;
+    clearInterval(timerInterval);
+    updatePlayButtons();
+    updateLrcHighlight(window.currentLrcTime || 0, false);
+  }
+
+  function stopPlay() {
+    capturePlaybackPosition();
+    isPlaying = false;
+    clearInterval(timerInterval);
+    updatePlayButtons();
+    
+    if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
+      try { ytPlayer.pauseVideo(); } catch(e){}
+    }
+
+    updateLrcHighlight(window.currentLrcTime || 0, false);
+  }
+
+  function capturePlaybackPosition() {
+    if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+      try {
+        window.currentLrcTime = ytPlayer.getCurrentTime();
+      } catch(e){}
+    }
+    updatePlaybackTimer(window.currentLrcTime || 0);
+  }
+
+  function updateLrcHighlight(currentTime, shouldScroll = !isEditingLrc) {
+    let activeIndex = -1;
+    const effectiveTime = currentTime + lrcAdvanceSeconds;
+
+    for (let i = 0; i < parsedLrc.length; i++) {
+      if (parsedLrc[i].time !== null && parsedLrc[i].time <= effectiveTime) {
+        activeIndex = i;
+      } else if (parsedLrc[i].time !== null && parsedLrc[i].time > effectiveTime) {
+        break;
+      }
+    }
+
+    const lrcLines = document.querySelectorAll('.lrc-line');
+    const codeLines = document.querySelectorAll('.code-line');
+    lrcLines.forEach(el => el.classList.remove('active'));
+    codeLines.forEach(el => el.classList.remove('active'));
+
+    if (activeIndex !== -1 && parsedLrc[activeIndex].time !== null) {
+      const activeLrc = document.getElementById(`lrc-line-${activeIndex}`);
+      const activeCode = document.getElementById(`code-line-${activeIndex}`);
+
+      if (activeLrc) {
+        activeLrc.classList.add('active');
+        if (shouldScroll) {
+          scrollLyricLineIntoContainer(activeLrc, document.getElementById("lrcDisplay"));
+        }
+      }
+
+      if (activeCode) {
+        activeCode.classList.add('active');
+        if (shouldScroll) {
+          scrollLyricLineIntoContainer(activeCode, document.getElementById("codeEditor"));
+        }
+      }
+    }
+  }
+
+  function scrollLyricLineIntoContainer(line, container) {
+    if (!line || !container) return;
+
+    const lineRect = line.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    const lineTop = lineRect.top - containerRect.top;
+    const isFullscreen = document.body.classList.contains("fullscreen-mode");
+
+    if (isFullscreen) {
+      const triggerPosition = container.clientHeight * 0.45;
+      const targetPosition = container.clientHeight * 0.32;
+      if (lineTop >= triggerPosition || lineTop < 0) {
+        const targetTop = container.scrollTop + lineTop - targetPosition;
+        const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight);
+        const clampedTop = Math.max(0, Math.min(maxScrollTop, targetTop));
+        if (Math.abs(container.scrollTop - clampedTop) > 2) {
+          container.scrollTo({ top: clampedTop, behavior: "smooth" });
+        }
+      }
+      return;
+    }
+
+    const lineCenter = lineTop + container.scrollTop + (lineRect.height / 2);
+    const targetTop = lineCenter - (container.clientHeight / 2);
+    const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight);
+    const clampedTop = Math.max(0, Math.min(maxScrollTop, targetTop));
+
+    if (Math.abs(container.scrollTop - clampedTop) > 2) {
+      container.scrollTo({ top: clampedTop, behavior: "smooth" });
+    }
+  }
+
+  function onSongChange(songIndex) {
+    const lyricsBtn = document.getElementById("lyricsLink");
+    const notesContainer = document.getElementById("notesContainer");
+    const ytMusicBtn = document.getElementById("ytMusicBtn");
+    const ytUrlInput = document.getElementById("ytUrlInput");
+    const saveNotesBtn = document.getElementById("btnSaveLiveNotes");
+
+    stopPlay();
+
+    if (songIndex === "") {
+      activeSongIndex = null;
+      lyricsBtn.style.display = "none";
+      notesContainer.style.display = "none";
+      document.body.classList.remove("fullscreen-mode");
+      return;
+    }
+
+    activeSongIndex = parseInt(songIndex, 10);
+    const selectedSong = songs[activeSongIndex];
+
+    if (selectedSong) {
+      // Invia il Program Change tramite MidiManager
+      MidiManager.sendProgramChange(selectedSong.preset - 1);
+      log(`BRANO CARICATO: ${selectedSong.title} (Preset ${selectedSong.preset})`);
+
+      const queryGoogle = encodeURIComponent(`${selectedSong.title} lyrics testo`);
+      lyricsBtn.href = `https://www.google.com/search?q=${queryGoogle}`;
+      lyricsBtn.textContent = `🔍 Cerca testo di "${selectedSong.title}"`;
+      lyricsBtn.style.display = "block";
+
+      const queryYT = encodeURIComponent(selectedSong.title);
+      ytMusicBtn.href = `https://music.youtube.com/search?q=${queryYT}`;
+      ytMusicBtn.textContent = `🔴 Cerca "${selectedSong.title}" su YT Music`;
+
+      ytUrlInput.value = selectedSong.ytUrl || "";
+      const container = document.getElementById("ytPlayerContainer");
+      container.innerHTML = "";
+      
+      const videoId = extractYouTubeId(selectedSong.ytUrl);
+      if (videoId) {
+        const iframe = document.createElement("iframe");
+        iframe.id = "ytIframePlayer";
+        iframe.className = "yt-player-frame";
+        iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&playsinline=1&autoplay=0`;
+        iframe.allow = "autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; accelerometer";
+        iframe.style.display = "block";
+        container.appendChild(iframe);
+        
+        try {
+          ytPlayer = new YT.Player('ytIframePlayer', {
+            events: { 'onStateChange': onPlayerStateChange }
+          });
+        } catch(e){}
+      }
+
+      const rawContent = selectedSong.notes || "";
+      document.getElementById("timeOffsetSelect").value = "0";
+      updatePlaybackTimer(0);
+      parsedLrc = parseLRC(rawContent);
+
+      renderLrcDisplay();
+      renderCodeEditor(rawContent);
+
+      saveNotesBtn.style.display = "none";
+      notesContainer.style.display = "block";
+    }
+  }
+
+  function changeFontSize(size) {
+    document.getElementById("lrcDisplay").style.fontSize = size;
+    document.getElementById("codeEditor").style.fontSize = size;
+  }
+
+  function scrollNotes(direction) {
+    const container = document.getElementById("lrcDisplay");
+    const editor = document.getElementById("codeEditor");
+    const scrollAmount = 180;
+    if (direction === 'up') {
+      container.scrollTop -= scrollAmount;
+      editor.scrollTop -= scrollAmount;
+    } else {
+      container.scrollTop += scrollAmount;
+      editor.scrollTop += scrollAmount;
+    }
+  }
+
+  function setupColumnResizer() {
+    const wrapper = document.querySelector(".notes-wrapper");
+    const resizer = document.getElementById("columnResizer");
+    const display = document.getElementById("lrcDisplay");
+    const editor = document.getElementById("codeEditor");
+    if (!wrapper || !resizer || !display || !editor) return;
+
+    const setColumnWidths = (clientX) => {
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const availableWidth = wrapperRect.width - resizer.offsetWidth - 20;
+      if (availableWidth <= 0) return;
+
+      const leftWidth = Math.min(availableWidth * 0.8, Math.max(availableWidth * 0.2, clientX - wrapperRect.left));
+      display.style.flex = `0 0 ${leftWidth}px`;
+      editor.style.flex = "1 1 0";
+    };
+
+    resizer.addEventListener("pointerdown", (event) => {
+      if (window.matchMedia("(max-width: 600px)").matches) return;
+      isResizingColumns = true;
+      resizer.classList.add("dragging");
+      resizer.setPointerCapture(event.pointerId);
+    });
+
+    resizer.addEventListener("pointermove", (event) => {
+      if (isResizingColumns) setColumnWidths(event.clientX);
+    });
+
+    const stopResizing = (event) => {
+      if (!isResizingColumns) return;
+      isResizingColumns = false;
+      resizer.classList.remove("dragging");
+      if (resizer.hasPointerCapture(event.pointerId)) resizer.releasePointerCapture(event.pointerId);
+    };
+
+    resizer.addEventListener("pointerup", stopResizing);
+    resizer.addEventListener("pointercancel", stopResizing);
+  }
+
+  function onNotesInput() {
+    isEditingLrc = true;
+    document.getElementById("btnSaveLiveNotes").style.display = "block";
+    document.getElementById("btnUndoLiveNotes").style.display = "block";
+    const lrcDisplay = document.getElementById("lrcDisplay");
+    const codeEditor = document.getElementById("codeEditor");
+    const lrcScrollTop = lrcDisplay.scrollTop;
+    const codeScrollTop = codeEditor.scrollTop;
+    const rawContent = getRawContentFromEditor();
+    
+    parsedLrc = parseLRC(rawContent);
+    renderLrcDisplay();
+    lrcDisplay.scrollTop = lrcScrollTop;
+    codeEditor.scrollTop = codeScrollTop;
+    updateLrcHighlight(window.currentLrcTime || 0, false);
+
+    if (activeSongIndex !== null) {
+      songs[activeSongIndex].notes = rawContent;
+      saveSongsToStorage();
+    }
+  }
+
+  function saveLiveNotes() {
+    if (activeSongIndex === null) return;
+    const newNotes = getRawContentFromEditor();
+    songs[activeSongIndex].notes = newNotes;
+    saveSongsToStorage();
+
+    parsedLrc = parseLRC(newNotes);
+    document.getElementById("btnSaveLiveNotes").style.display = "none";
+    document.getElementById("btnUndoLiveNotes").style.display = "none";
+    isEditingLrc = false;
+    renderLrcDisplay();
+    renderCodeEditor(newNotes);
+    updateLrcHighlight(window.currentLrcTime || 0, true);
+    log(`Note e timing salvati per: ${songs[activeSongIndex].title}`);
+  }
+
+  function undoLiveNotes() {
+    if (activeSongIndex === null) return;
+
+    const savedNotes = songs[activeSongIndex].notes || "";
+    parsedLrc = parseLRC(savedNotes);
+    renderLrcDisplay();
+    renderCodeEditor(savedNotes);
+    document.getElementById("btnSaveLiveNotes").style.display = "none";
+    document.getElementById("btnUndoLiveNotes").style.display = "none";
+    isEditingLrc = false;
+
+    songs[activeSongIndex].notes = savedNotes;
+    saveSongsToStorage();
+
+    updateLrcHighlight(window.currentLrcTime || 0, true);
+    log(`Modifiche LRC annullate per: ${songs[activeSongIndex].title}`);
+  }
+
+  function prevSong() {
+    const select = document.getElementById("songSelect");
+    let currentIndex = parseInt(select.value, 10);
+    if (isNaN(currentIndex) || currentIndex <= 0) currentIndex = songs.length - 1;
+    else currentIndex--;
+    select.value = currentIndex;
+    onSongChange(currentIndex);
+  }
+
+  function nextSong() {
+    const select = document.getElementById("songSelect");
+    let currentIndex = parseInt(select.value, 10);
+    if (isNaN(currentIndex) || currentIndex >= songs.length - 1) currentIndex = 0;
+    else currentIndex++;
+    select.value = currentIndex;
+    onSongChange(currentIndex);
+  }
+</script>
+
 </body>
 </html>
