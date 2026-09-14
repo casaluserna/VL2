@@ -7,13 +7,22 @@
   <style>
     body { font-family: system-ui, sans-serif; padding: 20px; background: #121212; color: #fff; }
     .card { background: #1e1e1e; padding: 20px; border-radius: 8px; margin-bottom: 20px; max-width: 500px; }
-    select, button { padding: 10px; margin: 10px 0; width: 100%; border-radius: 4px; border: none; font-size: 16px; }
-    button { background: #007bff; color: white; cursor: pointer; }
-    button:hover { background: #0056b3; }
+    select, button, .btn-upload { padding: 10px; margin: 10px 0; width: 100%; border-radius: 4px; border: none; font-size: 16px; box-sizing: border-box; text-align: center; display: block; }
+    button, .btn-upload { background: #007bff; color: white; cursor: pointer; text-decoration: none; }
+    button:hover, .btn-upload:hover { background: #0056b3; }
     .status { padding: 8px; font-weight: bold; border-radius: 4px; text-align: center; }
     .online { background: #28a745; }
     .offline { background: #dc3545; }
     a { color: #17a2b8; text-decoration: none; display: inline-block; margin-bottom: 15px; }
+
+    /* Input file reale invisibile ma presente nel DOM (fix fondamentale per iOS/iPad) */
+    .hidden-file-input {
+      position: absolute;
+      left: -9999px;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+    }
   </style>
 </head>
 <body>
@@ -21,34 +30,41 @@
   <a href="index.html">← Torna al Menu Principale</a>
   <h1>Scaletta Canzoni & Preset</h1>
 
-  <!-- Selezione Interfaccia MIDI -->
+  <!-- Selezione Interfaccia MIDI (Riconosce Cavo USB o SK-7) -->
   <div class="card">
     <h3>1. Configurazione MIDI</h3>
     <div id="status-badge" class="status offline">MIDI Disconnesso</div>
     <br>
-    <label for="midi-select">Dispositivo di Uscita (VoiceLive 2):</label>
+    <label for="midi-select">Dispositivo di Uscita (VoiceLive 2 / SK-7):</label>
     <select id="midi-select" onchange="onOutputChanged(this.value)">
       <option value="">-- Seleziona Interfaccia --</option>
     </select>
   </div>
 
-  <!-- Test Brano A Caso e Selezione Scaletta -->
+  <!-- Caricamento e Selezione Scaletta -->
   <div class="card">
     <h3>2. Cambio Preset / Scaletta</h3>
-    
-    <button onclick="playRandomSong()">🎲 Test: Carica Brano a Caso</button>
-    <hr style="border-color: #333; margin: 15px 0;">
 
-    <label for="song-list">Oppure seleziona una canzone della lista:</label>
+    <!-- Pulsante Carica JSON compatibile iPad (usa un <label> nativo) -->
+    <label for="json-file-input" class="btn-upload">
+      📂 Carica Scaletta (.json)
+    </label>
+    <input 
+      type="file" 
+      id="json-file-input" 
+      class="hidden-file-input" 
+      accept=".json,application/json,text/plain,*/*"
+    >
+
+    <label for="song-list">Seleziona una canzone della scaletta:</label>
     <select id="song-list" onchange="onSongSelected(this.value)">
-      <option value="">-- Scegli Canzone --</option>
-      <option value="1">1. Intro / Acoustic (Preset 1)</option>
-      <option value="15">2. Bohemian Rhapsody (Preset 15)</option>
-      <option value="42">3. Hotel California (Preset 42)</option>
-      <option value="135">4. Special Harmony (Preset 135 - Banco 2)</option>
+      <option value="">-- Nessuna scaletta caricata --</option>
     </select>
 
     <div id="song-info" style="margin-top: 15px; font-style: italic; color: #aaa;"></div>
+
+    <hr style="border-color: #333; margin: 15px 0;">
+    <button onclick="playRandomSong()">🎲 Test: Carica Brano a Caso</button>
   </div>
 
   <!-- Inclusione del Modulo MIDI -->
@@ -63,7 +79,7 @@
       { title: "Uptown Funk", preset: 130 }
     ];
 
-    // Inizializzazione pagina
+    // Inizializzazione pagina MIDI
     document.addEventListener("DOMContentLoaded", async () => {
       const ok = await initMIDI((devices) => {
         const select = document.getElementById("midi-select");
@@ -96,14 +112,70 @@
       document.getElementById("song-info").textContent = `Preset ${num} inviato al VoiceLive 2.`;
     }
 
-    // Funzione per testare l'invio di un brano casuale
     function playRandomSong() {
       const randomSong = sampleSongs[Math.floor(Math.random() * sampleSongs.length)];
       sendPresetChange(randomSong.preset);
-      
       document.getElementById("song-info").innerHTML = 
         `🎵 Canzone Casuale: <b>${randomSong.title}</b><br>Preset inviato: <b>${randomSong.preset}</b>`;
     }
+
+    // --- GESTIONE CARICAMENTO FILE JSON (FIX IPAD / WEB MIDI BROWSER) ---
+    const jsonInput = document.getElementById("json-file-input");
+
+    // Reset del valore al tap: permette di ricaricare lo stesso file se modificato
+    jsonInput.addEventListener("click", function() {
+      this.value = null;
+    });
+
+    jsonInput.addEventListener("change", function(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const songInfo = document.getElementById("song-info");
+      songInfo.textContent = `Caricamento di "${file.name}"...`;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const content = evt.target.result;
+          const data = JSON.parse(content);
+
+          // Supporta array diretto [...] o oggetti come { songs: [...] } o { scaletta: [...] }
+          const list = Array.isArray(data) ? data : (data.songs || data.scaletta || []);
+
+          if (!list || list.length === 0) {
+            alert("Il file JSON non contiene un elenco valido di canzoni.");
+            return;
+          }
+
+          // Popoliamo il menu a tendina <select id="song-list">
+          const songSelect = document.getElementById("song-list");
+          songSelect.innerHTML = '<option value="">-- Scegli Canzone --</option>';
+
+          list.forEach((item, index) => {
+            const opt = document.createElement("option");
+            const title = item.title || item.nome || item.brano || `Brano ${index + 1}`;
+            const preset = item.preset || item.pc || (index + 1);
+
+            opt.value = preset;
+            opt.textContent = `${index + 1}. ${title} (Preset ${preset})`;
+            songSelect.appendChild(opt);
+          });
+
+          songInfo.innerHTML = `✅ Scaletta <b>"${file.name}"</b> caricata: <b>${list.length} brani</b> pronti.`;
+
+        } catch (err) {
+          alert("Errore nel file JSON:\n" + err.message);
+          songInfo.textContent = "Errore durante il caricamento del file JSON.";
+        }
+      };
+
+      reader.onerror = function() {
+        alert("Errore di lettura del file da parte del browser iOS.");
+      };
+
+      reader.readAsText(file);
+    });
   </script>
 </body>
 </html>
