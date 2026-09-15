@@ -1,4 +1,4 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
 <meta charset="UTF-8">
@@ -18,7 +18,7 @@
   --border:#30353f;
 }
 
-*{ box-sizing:border-box; }
+*{ box-sizing:border-box; touch-action: manipulation; }
 
 body{
   margin:0;
@@ -39,6 +39,7 @@ a.back {
   display:inline-block;
   margin-bottom:15px;
   font-size:14px;
+  font-weight:bold;
 }
 
 h1{
@@ -54,9 +55,10 @@ h1{
   background:#191c22;
   margin-bottom:15px;
   font-weight:bold;
+  border: 1px solid var(--border);
 }
 
-.status.ok{ color:var(--green); }
+.status.ok{ color:var(--green); border-color: var(--green); }
 
 .section{
   background:var(--card);
@@ -181,24 +183,19 @@ button:active{ transform:scale(.98); }
 
   <div id="mainStatus" class="status">MIDI OFFLINE</div>
 
-  <!-- CONNETTI SK-7 OUT -->
+  <!-- SELEZIONE PORTA MIDI (CAVO USB / SK-7) -->
   <div class="section">
-    <label>MIDI OUTPUT — SK-7 collegato al MIDI IN del VoiceLive 2</label>
-    <button id="connectOut" class="connect" onclick="handleConnectOut()">CONNETTI SK-7 OUT</button>
-    <div id="outInfo" class="small">Non collegato</div>
-  </div>
-
-  <!-- CONNETTI SK-7 IN -->
-  <div class="section">
-    <label>MIDI INPUT — SK-7 collegato al MIDI OUT del VoiceLive 2</label>
-    <button id="connectIn" class="connect in" onclick="handleConnectIn()">CONNETTI SK-7 IN</button>
-    <div id="inInfo" class="small">Feedback MIDI non collegato</div>
+    <label for="midiOutputSelect"><strong>Interfaccia MIDI (Cavo USB Diretto / SK-7)</strong></label>
+    <select id="midiOutputSelect">
+      <option value="">Ricerca porte MIDI...</option>
+    </select>
+    <div id="outInfo" class="small">Seleziona il dispositivo per inviare i comandi via cavo.</div>
   </div>
 
   <!-- CANALE MIDI -->
   <div class="section">
-    <label>Canale MIDI</label>
-    <select id="midiChannel">
+    <label>Canale MIDI VoiceLive 2</label>
+    <select id="midiChannel" onchange="onChannelChange(this.value)">
       <option value="0">Canale 1</option>
       <option value="1">Canale 2</option>
       <option value="2">Canale 3</option>
@@ -218,9 +215,9 @@ button:active{ transform:scale(.98); }
     </select>
   </div>
 
-  <!-- GRIGLIA EFFETTI -->
+  <!-- GRIGLIA EFFETTI CC -->
   <div class="section">
-    <h2>VoiceLive 2</h2>
+    <h2>Blocchi Effetti VoiceLive 2</h2>
     <div class="fx-grid">
       <div class="fx" id="fx-110">
         <div><div class="fx-name">Harmony</div><div class="cc">CC 110</div></div>
@@ -258,7 +255,7 @@ button:active{ transform:scale(.98); }
       </div>
 
       <div class="fx" id="fx-114">
-        <div><div class="fx-name">Bypass</div><div class="cc">CC 114</div></div>
+        <div><div class="fx-name">Rhythmic / Bypass</div><div class="cc">CC 114</div></div>
         <button onclick="toggleFx(114)">OFF</button>
       </div>
     </div>
@@ -272,13 +269,13 @@ button:active{ transform:scale(.98); }
     </div>
   </div>
 
-  <!-- TEST -->
+  <!-- TEST HARMONY -->
   <div class="section">
     <button class="test" onclick="testHarmony()">TEST HARMONY</button>
-    <div class="small">Invia Harmony ON per 1 secondo e poi OFF.</div>
+    <div class="small">Invia comando Harmony ON per 1 secondo e poi OFF tramite cavo USB.</div>
   </div>
 
-  <!-- LOG -->
+  <!-- LOG MIDI -->
   <div class="section">
     <label>LOG MIDI</label>
     <div id="log" class="log"></div>
@@ -286,56 +283,83 @@ button:active{ transform:scale(.98); }
 
 </div>
 
-<!-- INCLUSIONE DEL MODULO CONDIVISO MIDI -->
+<!-- INCLUSIONE MODULI MIDI -->
 <script src="midi-core.js"></script>
+<script src="midi-manager.js"></script>
 
 <script>
-/* =========================================================
-   GESTIONE UI ED EVENTI LOCALI
-   ========================================================= */
+// Stato degli 8 effetti CC del VoiceLive 2
+const fxState = {
+  110: false,
+  111: false,
+  112: false,
+  113: false,
+  114: false,
+  116: false,
+  117: false,
+  118: false
+};
 
-function updateStatusUI(isOnline) {
+function log(message) {
+  const logDiv = document.getElementById("log");
+  if (logDiv) {
+    const timestamp = new Date().toLocaleTimeString();
+    logDiv.innerHTML = `[${timestamp}] ${message}\n` + logDiv.innerHTML;
+  }
+}
+
+function updateStatusUI(isOnline, text = "") {
   const status = document.getElementById("mainStatus");
   if (isOnline) {
-    status.textContent = "MIDI ONLINE";
+    status.textContent = text || "MIDI ONLINE";
     status.className = "status ok";
   } else {
-    status.textContent = "MIDI OFFLINE";
+    status.textContent = text || "MIDI OFFLINE";
     status.className = "status";
   }
 }
 
-async function handleConnectOut() {
-  await connectOutputSK7((deviceName) => {
-    const btn = document.getElementById("connectOut");
-    const info = document.getElementById("outInfo");
-    if (deviceName) {
-      info.innerHTML = `Connesso: <b>${deviceName}</b> <span class='badge green'>OUT</span>`;
-      btn.textContent = "SK-7 OUT CONNESSO";
-      updateStatusUI(true);
-    } else {
-      info.textContent = "SK-7 OUT disconnesso";
-      btn.textContent = "CONNETTI SK-7 OUT";
-      updateStatusUI(false);
-    }
-  });
+function onChannelChange(val) {
+  MidiManager.midiChannel = parseInt(val, 10);
+  log(`Canale MIDI impostato su: Canale ${MidiManager.midiChannel + 1}`);
 }
 
-async function handleConnectIn() {
-  await connectInputSK7((deviceName) => {
-    const btn = document.getElementById("connectIn");
-    const info = document.getElementById("inInfo");
-    if (deviceName) {
-      info.innerHTML = `Connesso: <b>${deviceName}</b> <span class='badge green'>IN</span>`;
-      btn.textContent = "SK-7 IN CONNESSO";
-    } else {
-      info.textContent = "SK-7 IN disconnesso";
-      btn.textContent = "CONNETTI SK-7 IN";
+// Funzione unificata per inviare Control Change sia tramite Cavo USB sia via BLE SK-7
+async function sendCC(cc, value) {
+  let sent = false;
+
+  // 1. Invio primario via Cavo USB (Web MIDI / MidiManager)
+  if (MidiManager.activeOutput) {
+    MidiManager.sendControlChange(cc, value);
+    sent = true;
+  }
+
+  // 2. Fallback via Bluetooth BLE (se connesso tramite midi-core.js)
+  if (midiCharacteristic) {
+    try {
+      const packet = new Uint8Array([
+        0x80,
+        0x80,
+        0xB0 | MidiManager.midiChannel,
+        cc,
+        value
+      ]);
+      await midiCharacteristic.writeValue(packet);
+      sent = true;
+    } catch (e) {
+      log("Errore invio BLE: " + e.message);
     }
-  });
+  }
+
+  if (sent) {
+    log(`Inviato CC ${cc} = ${value} (CH ${MidiManager.midiChannel + 1})`);
+    return true;
+  } else {
+    log(`⚠️ Nessun dispositivo MIDI selezionato! Collega il cavo USB.`);
+    return false;
+  }
 }
 
-// Funzione globale usata da midi-core.js per aggiornare l'interfaccia quando arriva un CC
 function updateFxUI(cc, state) {
   const card = document.getElementById("fx-" + cc);
   if (!card) return;
@@ -363,42 +387,48 @@ async function toggleFx(cc) {
 
 async function allFxOff() {
   for (const cc of Object.keys(fxState)) {
-    await sendCC(parseInt(cc), 0);
+    await sendCC(parseInt(cc, 10), 0);
     fxState[cc] = false;
-    updateFxUI(parseInt(cc), false);
+    updateFxUI(parseInt(cc, 10), false);
   }
-  log("TUTTI GLI FX OFF");
+  log("TUTTI GLI FX: OFF");
 }
 
 async function allFxOn() {
   for (const cc of Object.keys(fxState)) {
-    await sendCC(parseInt(cc), 127);
+    await sendCC(parseInt(cc, 10), 127);
     fxState[cc] = true;
-    updateFxUI(parseInt(cc), true);
+    updateFxUI(parseInt(cc, 10), true);
   }
-  log("TUTTI GLI FX ON");
+  log("TUTTI GLI FX: ON");
 }
 
 async function testHarmony() {
-  log("TEST HARMONY ON");
-  await sendCC(110, 127);
-  fxState[110] = true;
-  updateFxUI(110, true);
+  log("TEST: HARMONY ON");
+  const sent = await sendCC(110, 127);
+  if (sent) {
+    fxState[110] = true;
+    updateFxUI(110, true);
 
-  setTimeout(async () => {
-    log("TEST HARMONY OFF");
-    await sendCC(110, 0);
-    fxState[110] = false;
-    updateFxUI(110, false);
-  }, 1000);
+    setTimeout(async () => {
+      log("TEST: HARMONY OFF");
+      await sendCC(110, 0);
+      fxState[110] = false;
+      updateFxUI(110, false);
+    }, 1000);
+  }
 }
 
-window.addEventListener("load", () => {
-  log("Pagina caricata.");
-  if (!navigator.bluetooth) {
-    log("ATTENZIONE: Web Bluetooth non disponibile.");
+// Inizializzazione al caricamento
+window.addEventListener("load", async () => {
+  log("Inizializzazione modulo Effetti...");
+  
+  // Avvio MidiManager per rilevare il cavo USB del VoiceLive 2
+  const ready = await MidiManager.init("midiOutputSelect", "outInfo");
+  if (ready) {
+    updateStatusUI(true, "MIDI ONLINE (USB PRONTO)");
   } else {
-    log("Web Bluetooth disponibile.");
+    updateStatusUI(false, "MIDI OFFLINE");
   }
 });
 </script>
