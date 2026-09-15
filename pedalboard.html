@@ -425,18 +425,18 @@
     <!-- TASTI SUPERIORI -->
     <div class="function-cluster">
       <div class="func-row">
-        <!-- TONE / BYPASS (CC 114) -->
-        <div class="btn-rubber" id="btn-tone" onclick="handleToneBypass()">
+        <!-- TONE (Pitch Correct CC 107) -->
+        <div class="btn-rubber" id="btn-tone" onclick="toggleEffectCC(107, 'btn-tone')">
           <div class="led-dot"></div>
-          <div class="btn-label">Tone/Bypass</div>
+          <div class="btn-label">Tone (Pitch)</div>
         </div>
-        <!-- PITCH -->
-        <div class="btn-rubber" id="btn-pitch" onclick="handlePitchInfo()">
+        <!-- PITCH (HardTune CC 108) -->
+        <div class="btn-rubber" id="btn-pitch" onclick="toggleEffectCC(108, 'btn-pitch')">
           <div class="led-dot"></div>
-          <div class="btn-label">Pitch</div>
+          <div class="btn-label">Pitch (HardT)</div>
         </div>
-        <!-- GUITAR FX -->
-        <div class="btn-rubber" id="btn-gtr" onclick="handleGuitarInfo()">
+        <!-- GUITAR FX (Guitar Gain CC 109) -->
+        <div class="btn-rubber" id="btn-gtr" onclick="toggleEffectCC(109, 'btn-gtr')">
           <div class="led-dot"></div>
           <div class="btn-label">Guitar FX</div>
         </div>
@@ -450,7 +450,7 @@
       <div class="round-btn-row">
         <div class="btn-round" onclick="loadPrevSong()">Setup</div>
         <div class="btn-round" onclick="loadNextSong()">Wizard</div>
-        <div class="btn-round" onclick="logAction('Preset sincronizzato con VL2.')">Store</div>
+        <div class="btn-round" onclick="logAction('Preset salvato nella memoria.')">Store</div>
         <div class="btn-round" onclick="window.location.href='setlist.html'">Edit</div>
       </div>
     </div>
@@ -495,7 +495,7 @@
 
   </div>
 
-  <!-- PANNELLO FOOTSWITCH (10 PEDALI) -->
+  <!-- PANNELLO FOOTSWITCH -->
   <div class="footswitch-panel">
 
     <div class="stomp-row">
@@ -506,31 +506,31 @@
         <div class="arrow-indicator">▲</div>
       </div>
 
-      <!-- 2. SHORTCUT (BYPASS / TALK CC 114) -->
-      <div class="stomp-unit" id="stomp-114" onclick="toggleEffectCC(114)">
+      <!-- 2. SHORTCUT (Talk Mode / Bypass CC 114) -->
+      <div class="stomp-unit" id="stomp-114" onclick="toggleEffectCC(114, 'stomp-114')">
         <div class="stomp-title">SHORTCUT</div>
-        <div class="stomp-subtitle">BYPASS / TALK</div>
+        <div class="stomp-subtitle">TALK / BYPASS</div>
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
       </div>
 
       <div class="divider-line"></div>
 
       <!-- 3. µMOD (CC 116) -->
-      <div class="stomp-unit" id="stomp-116" onclick="toggleEffectCC(116)">
+      <div class="stomp-unit" id="stomp-116" onclick="toggleEffectCC(116, 'stomp-116')">
         <div class="stomp-title">µMOD</div>
         <div class="stomp-subtitle">CHORUS / FLANGE</div>
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
       </div>
 
       <!-- 4. DELAY (CC 117) -->
-      <div class="stomp-unit" id="stomp-117" onclick="toggleEffectCC(117)">
+      <div class="stomp-unit" id="stomp-117" onclick="toggleEffectCC(117, 'stomp-117')">
         <div class="stomp-title">DELAY</div>
         <div class="stomp-subtitle">ECHO</div>
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
       </div>
 
       <!-- 5. REVERB (CC 112) -->
-      <div class="stomp-unit" id="stomp-112" onclick="toggleEffectCC(112)">
+      <div class="stomp-unit" id="stomp-112" onclick="toggleEffectCC(112, 'stomp-112')">
         <div class="stomp-title">REVERB</div>
         <div class="stomp-subtitle" style="font-size:7px;">HOLD FOR MIC GAIN</div>
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
@@ -545,33 +545,33 @@
         <div class="arrow-indicator">▼</div>
       </div>
 
-      <!-- 7. STEP -->
-      <div class="stomp-unit" id="stomp-step" onclick="handleStep()">
+      <!-- 7. STEP (Hit On/Off CC 87) -->
+      <div class="stomp-unit" id="stomp-87" onclick="toggleEffectCC(87, 'stomp-87')">
         <div class="stomp-title">STEP</div>
-        <div class="stomp-subtitle">PART / BRIDGE</div>
+        <div class="stomp-subtitle">HIT / PART</div>
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
       </div>
 
       <div class="divider-line"></div>
 
       <!-- 8. HARMONY (CC 110) -->
-      <div class="stomp-unit" id="stomp-110" onclick="toggleEffectCC(110)">
+      <div class="stomp-unit" id="stomp-110" onclick="toggleEffectCC(110, 'stomp-110')">
         <div class="stomp-title">HARMONY</div>
         <div class="stomp-subtitle">VOICES</div>
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
       </div>
 
       <!-- 9. DOUBLE (CC 111) -->
-      <div class="stomp-unit" id="stomp-111" onclick="toggleEffectCC(111)">
+      <div class="stomp-unit" id="stomp-111" onclick="toggleEffectCC(111, 'stomp-111')">
         <div class="stomp-title">DOUBLE</div>
         <div class="stomp-subtitle">OVERDUB</div>
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
       </div>
 
-      <!-- 10. FX (CC 118 - TRANSDUCER / RHYTHMIC) -->
-      <div class="stomp-unit" id="stomp-118" onclick="toggleEffectCC(118)">
+      <!-- 10. FX (Transducer CC 103) -->
+      <div class="stomp-unit" id="stomp-103" onclick="toggleEffectCC(103, 'stomp-103')">
         <div class="stomp-title">FX</div>
-        <div class="stomp-subtitle">TRANSDUCER / MOD</div>
+        <div class="stomp-subtitle">TRANSDUCER</div>
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
       </div>
     </div>
@@ -582,7 +582,7 @@
 
 <!-- FINESTRA LOG A 2 RIGHE -->
 <div class="log-box-2lines" id="logBox">
-  <div class="log-line" id="logLine1">[SISTEMA] VoiceLive 2 Virtual Unit Caricata.</div>
+  <div class="log-line" id="logLine1">[SISTEMA] VoiceLive 2 Mappato su CSV.</div>
   <div class="log-line" id="logLine2">Seleziona un'interfaccia MIDI per iniziare...</div>
 </div>
 
@@ -593,16 +593,24 @@
 <script>
   let songs = [];
   let currentSongIndex = 0;
-  const logLines = ["VoiceLive 2 Online.", "In attesa di comandi MIDI..."];
+  const logLines = ["VoiceLive 2 CSV Map Online.", "In attesa di comandi MIDI..."];
 
-  const fxStates = {
-    110: false,
-    111: false,
-    112: false,
-    114: false,
-    116: false,
-    117: false,
-    118: false
+  // Mappa di stato degli effetti (tutti i CC dal CSV)
+  const fxStates = {};
+
+  // Nomi ufficiali dal CSV per il Log
+  const ccNames = {
+    110: "Harmony",
+    111: "Double",
+    112: "Reverb",
+    116: "µMod",
+    117: "Delay",
+    103: "FX/Transducer",
+    114: "Talk/Bypass",
+    108: "HardTune (Pitch)",
+    107: "Pitch Correct (Tone)",
+    109: "Guitar Gain",
+    87:  "Step/Hit"
   };
 
   function logAction(msg) {
@@ -665,9 +673,7 @@
 
     if (!songs || songs.length === 0) {
       songs = [
-        { title: "Hotel California", preset: 42 },
-        { title: "Sweet Child O' Mine", preset: 5 },
-        { title: "Bohemian Rhapsody", preset: 15 }
+        { title: "Hotel California", preset: 42 }
       ];
     }
 
@@ -715,29 +721,21 @@
     applySongToUnit(prevIdx);
   }
 
-  function toggleEffectCC(cc) {
+  // FUNZIONE UNICA PER TUTTI I CC (Accende sia Stomp che Tasti gommosi)
+  function toggleEffectCC(cc, elementId) {
     fxStates[cc] = !fxStates[cc];
     const val = fxStates[cc] ? 127 : 0;
 
     const sent = safeSendCC(cc, val);
 
-    const stompEl = document.getElementById("stomp-" + cc);
-    if (stompEl) {
-      stompEl.classList.toggle("active", fxStates[cc]);
+    // Accende/spegne la grafica
+    const el = document.getElementById(elementId);
+    if (el) {
+      el.classList.toggle("active", fxStates[cc]);
     }
 
-    if (cc === 114) {
-      const toneBtn = document.getElementById("btn-tone");
-      if (toneBtn) toneBtn.classList.toggle("active", fxStates[114]);
-    }
-
-    const nomi = { 110: "Harmony", 111: "Double", 112: "Reverb", 114: "Bypass/Talk", 116: "uMod", 117: "Delay", 118: "FX/Transducer" };
-    const label = nomi[cc] || ("CC " + cc);
-    logAction(label + " -> " + (fxStates[cc] ? "ON (127)" : "OFF (0)") + (sent ? "" : " [MIDI OFF]"));
-  }
-
-  function handleToneBypass() {
-    toggleEffectCC(114);
+    const label = ccNames[cc] || ("CC " + cc);
+    logAction(label + " -> " + (fxStates[cc] ? "ON" : "OFF") + (sent ? "" : " [MIDI OFF]"));
   }
 
   function handleHomeBtn() {
@@ -750,26 +748,6 @@
     logAction("HOME: Reset su preset " + songs[currentSongIndex].preset);
   }
 
-  function handlePitchInfo() {
-    const btn = document.getElementById("btn-pitch");
-    if (btn) btn.classList.toggle("active");
-    logAction("Pitch: Modifica da display VL2 (nessun CC dedicato).");
-  }
-
-  function handleGuitarInfo() {
-    const btn = document.getElementById("btn-gtr");
-    if (btn) btn.classList.toggle("active");
-    logAction("Guitar FX: Modifica da display VL2 (nessun CC dedicato).");
-  }
-
-  function handleStep() {
-    const el = document.getElementById("stomp-step");
-    if (el) el.classList.add("active");
-    setTimeout(() => {
-      if (el) el.classList.remove("active");
-    }, 200);
-    logAction("Step Switch premuto.");
-  }
 </script>
 
 </body>
