@@ -3,374 +3,586 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>VoiceLive 2 - Virtual Pedalboard Live</title>
+<title>TC-Helicon VoiceLive 2 - Virtual Unit</title>
 
 <style>
   :root {
-    --chassis: #17191d;
-    --chassis-border: #2e333d;
-    --lcd-bg: #031424;
-    --lcd-text: #52c8ff;
-    --lcd-dim: #1e587d;
-    --led-off: #3a1c1c;
-    --led-on: #00ff66;
-    --led-glow: rgba(0, 255, 102, 0.6);
-    --blue: #3d8bfd;
+    --vl-body: #17181c;
+    --vl-upper: #111215;
+    --vl-bezel: #2b2e36;
+    --vl-blue: #0099cc;
+    --lcd-bg: #009ce6;
+    --lcd-color: #001e38;
+    --led-red-off: #3d0d0d;
+    --led-red-on: #ff2222;
+    --glow-red: 0 0 16px rgba(255, 34, 34, 0.9), inset 0 0 8px rgba(255, 34, 34, 0.8);
+    --ring-off: #2a2020;
   }
 
   * { box-sizing: border-box; touch-action: manipulation; user-select: none; }
-  
+
   body {
     margin: 0;
-    padding: 14px;
-    background: #0c0d10;
-    color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    display: flex;
-    justify-content: center;
-  }
-
-  .pedalboard-case {
-    width: 100%;
-    max-width: 820px;
-    background: linear-gradient(180deg, #22262e 0%, var(--chassis) 100%);
-    border: 3px solid var(--chassis-border);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.1);
-  }
-
-  /* TOP BAR */
-  .top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  a.nav-link {
-    color: var(--blue);
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 14px;
-  }
-
-  .midi-selector-wrap {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  select.midi-select {
-    background: #0e1013;
-    border: 1px solid #3a404d;
-    color: #cfd6e4;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    max-width: 220px;
-  }
-
-  /* ICONICO DISPLAY LCD RETROILLUMINATO BLU TC-HELICON */
-  .vl2-lcd {
-    background: var(--lcd-bg);
-    border: 3px solid #082949;
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-bottom: 22px;
-    box-shadow: inset 0 0 20px rgba(3, 85, 155, 0.4), 0 4px 10px rgba(0,0,0,0.5);
-    font-family: "Courier New", Courier, monospace;
-  }
-
-  .lcd-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    color: var(--lcd-dim);
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-  }
-
-  .lcd-main-line {
-    display: flex;
-    align-items: baseline;
-    gap: 15px;
-  }
-
-  .lcd-preset-num {
-    font-size: 42px;
-    font-weight: 900;
-    color: var(--lcd-text);
-    text-shadow: 0 0 12px rgba(82, 200, 255, 0.7);
-    line-height: 1;
-  }
-
-  .lcd-song-title {
-    font-size: 22px;
-    font-weight: bold;
-    color: #ffffff;
-    text-shadow: 0 0 10px rgba(82, 200, 255, 0.5);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .lcd-footer {
-    margin-top: 8px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: var(--lcd-text);
-    border-top: 1px solid #083057;
-    padding-top: 6px;
-  }
-
-  /* SELETTORE RAPIDO SCALETTA */
-  .setlist-quick-select {
-    margin-bottom: 20px;
-  }
-  .setlist-quick-select select {
-    width: 100%;
     padding: 12px;
-    background: #111317;
-    border: 1px solid #333a46;
-    color: #fff;
-    font-size: 16px;
-    border-radius: 8px;
-  }
-
-  /* GRIGLIA PEDALI STOMPSWITCH */
-  .stomp-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 14px;
-  }
-
-  @media (max-width: 650px) {
-    .stomp-grid { grid-template-columns: repeat(2, 1fr); }
-    .lcd-preset-num { font-size: 32px; }
-    .lcd-song-title { font-size: 18px; }
-  }
-
-  /* SINGOLO PEDALE STOMP */
-  .stomp-box {
-    background: linear-gradient(180deg, #2b303b 0%, #1a1d24 100%);
-    border: 2px solid #3d4554;
-    border-radius: 14px;
-    padding: 14px 10px;
+    background: #08090b;
+    color: #e6edf3;
+    font-family: Arial, Helvetica, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
+  }
+
+  .nav-header {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
     justify-content: space-between;
-    min-height: 125px;
-    cursor: pointer;
-    box-shadow: 0 5px 0 #101216, 0 8px 12px rgba(0,0,0,0.5);
-    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 6px;
+  }
+  .nav-header a {
+    color: #58a6ff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
   }
 
-  .stomp-box:active {
-    transform: translateY(4px);
-    box-shadow: 0 1px 0 #101216, 0 3px 6px rgba(0,0,0,0.6);
+  /* TELAIO HARDWARE VOICELIVE 2 */
+  .vl2-chassis {
+    width: 100%;
+    max-width: 900px;
+    background: var(--vl-body);
+    border: 3px solid #303540;
+    border-radius: 20px 20px 14px 14px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.9), inset 0 2px 3px rgba(255,255,255,0.08);
+    position: relative;
+    overflow: hidden;
   }
 
-  .stomp-name {
-    font-weight: 800;
-    font-size: 15px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #e5e9f0;
-    text-align: center;
+  /* BARRA SUPERIORE AZZURRA BRAND */
+  .brand-bar {
+    height: 24px;
+    background: #0e1014;
+    border-bottom: 2px solid #000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px;
   }
-
-  .stomp-sub {
+  .brand-box {
+    background: var(--vl-blue);
+    color: #fff;
+    font-weight: 900;
     font-size: 11px;
-    color: #7e8799;
-    margin-top: 2px;
+    letter-spacing: 1.5px;
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .brand-vl2 {
+    color: #fff;
+    font-weight: 900;
+    font-size: 12px;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #0077aa, var(--vl-blue));
+    padding: 2px 10px;
+    border-radius: 2px;
   }
 
-  /* PULSANTE CROMATO STOMP CENTRALE */
-  .stomp-button {
-    width: 46px;
-    height: 46px;
+  /* PANNELLO SUPERIORE (SCHERMO, TASTI, JOG WHEEL) */
+  .upper-panel {
+    background: linear-gradient(180deg, #191b20 0%, #101114 100%);
+    border-bottom: 3px solid #0a0b0d;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 200px 1fr 140px;
+    gap: 15px;
+    align-items: center;
+  }
+
+  @media (max-width: 768px) {
+    .upper-panel { grid-template-columns: 1fr; gap: 12px; }
+  }
+
+  /* PULSANTI TONE, PITCH, GUITAR FX, HOME */
+  .function-cluster {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .func-row {
+    display: flex;
+    gap: 6px;
+    justify-content: space-between;
+  }
+  .btn-rubber {
+    flex: 1;
+    background: #252830;
+    border: 1px solid #3c4250;
+    border-radius: 6px;
+    padding: 6px 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.15), 0 2px 4px #000;
+  }
+  .btn-rubber:active { transform: translateY(1px); }
+  .btn-rubber.active { border-color: #883030; background: #2f2224; }
+  
+  .led-dot {
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background: radial-gradient(circle, #e2e8f0 0%, #8a94a6 60%, #485162 100%);
-    border: 3px solid #1c2028;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.6), inset 0 2px 3px rgba(255,255,255,0.8);
-    margin: 8px 0;
+    background: var(--led-red-off);
+    border: 1px solid #000;
+  }
+  .btn-rubber.active .led-dot {
+    background: var(--led-red-on);
+    box-shadow: 0 0 6px #ff2222;
+  }
+  .btn-label { font-size: 9px; font-weight: bold; text-transform: uppercase; color: #a6b0c2; }
+
+  .round-btn-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .btn-round {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #202227;
+    border: 1px solid #3b3f4d;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 2px 4px #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: bold;
+    color: #9da6b8;
+    text-transform: uppercase;
+    cursor: pointer;
   }
 
-  /* LED LUMINOSO STOMP */
-  .stomp-led {
+  /* DISPLAY LCD BLU TC-HELICON */
+  .lcd-assembly {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .lcd-screen {
+    width: 100%;
+    background: var(--lcd-bg);
+    border: 4px solid #14171d;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--lcd-color);
+    box-shadow: inset 0 0 16px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.8);
+    font-family: monospace;
+  }
+  .lcd-top-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(0, 30, 56, 0.4);
+    padding-bottom: 3px;
+    margin-bottom: 4px;
+  }
+  .lcd-main-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .lcd-preset-id {
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  .lcd-preset-title {
+    font-size: 18px;
+    font-weight: 900;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 240px;
+  }
+  .lcd-sub-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    font-weight: bold;
+    margin-top: 4px;
+  }
+
+  /* 4 MANOPOLE MIX SOTTO L'LCD */
+  .knobs-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    align-items: center;
+  }
+  .knob-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .knob-head {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #333842 0%, #17191d 80%);
+    border: 2px solid #000;
+    box-shadow: 0 2px 4px #000;
+  }
+
+  /* JOG WHEEL E FRECCE NAVIGATE */
+  .jog-cluster {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .jog-wheel {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #292d36 30%, #15171b 90%);
+    border: 3px solid #0a0b0d;
+    box-shadow: 0 6px 10px #000, inset 0 2px 4px rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .jog-center-dot {
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: var(--led-off);
-    border: 1px solid #111;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
-    transition: background 0.15s, box-shadow 0.15s;
+    background: #0d0f12;
+    box-shadow: inset 0 1px 2px #000;
+  }
+  .navigate-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    font-weight: bold;
+    color: #9da6b8;
+  }
+  .nav-arrow {
+    background: #202227;
+    border: 1px solid #3b3f4d;
+    border-radius: 4px;
+    padding: 3px 6px;
+    cursor: pointer;
   }
 
-  .stomp-box.active .stomp-led {
-    background: var(--led-on);
-    box-shadow: 0 0 12px var(--led-glow), inset 0 0 3px #fff;
+  /* =========================================================
+     PANNELLO PEDALI INFERIORE (DISPOSIZIONE ORIGINALE FOTO)
+     ========================================================= */
+  .footswitch-panel {
+    padding: 24px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background: #14161a;
   }
 
-  .stomp-box.active {
-    border-color: #2e6945;
+  .stomp-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 12px 1fr 1fr 1fr;
+    gap: 12px;
+    align-items: center;
   }
 
-  /* PEDALI DI NAVIGAZIONE CANZONI (PREV / NEXT) */
-  .stomp-nav {
-    background: linear-gradient(180deg, #1f2735 0%, #151b24 100%);
-    border-color: #354a6b;
+  .divider-line {
+    width: 2px;
+    height: 80px;
+    background: #2a2e38;
+    margin: auto;
   }
-  .stomp-nav .stomp-name { color: #8ec3ff; }
+
+  @media (max-width: 650px) {
+    .stomp-row {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px 8px;
+    }
+    .divider-line { display: none; }
+  }
+
+  /* SINGOLO STOMPSWITCH */
+  .stomp-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    cursor: pointer;
+  }
+  .stomp-title {
+    font-size: 14px;
+    font-weight: 900;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    text-align: center;
+    min-height: 18px;
+  }
+  .stomp-subtitle {
+    font-size: 9px;
+    font-weight: bold;
+    color: #7b8394;
+    text-transform: uppercase;
+    margin-top: 2px;
+    min-height: 12px;
+  }
+
+  /* ANELLO LED LUMINOSO CIRCOLARE ROSSO (COME DA FOTO) */
+  .stomp-ring {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    margin-top: 10px;
+    background: var(--ring-off);
+    border: 3px solid #1c1818;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 3px 6px #090a0d;
+    transition: all 0.15s ease;
+  }
+  .stomp-unit.active .stomp-ring {
+    background: var(--led-red-on);
+    border-color: #ff7777;
+    box-shadow: var(--glow-red);
+  }
+
+  /* PULSANTE METALLICO CROMATO */
+  .stomp-metal-plunger {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #a6b0c2 45%, #464c58 100%);
+    border: 2px solid #232730;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.9), inset 0 1px 2px rgba(255,255,255,0.8);
+    transition: transform 0.08s ease;
+  }
+  .stomp-unit:active .stomp-metal-plunger {
+    transform: scale(0.92);
+  }
+
+  /* FRECCE SOTTO IL PEDALE PRESET */
+  .arrow-indicator {
+    font-size: 16px;
+    color: #9aa5b8;
+    margin-top: 4px;
+  }
 </style>
 </head>
 <body>
 
-<div class="pedalboard-case">
-
-  <!-- TOP BAR: RITORNO & CONNESSIONE MIDI -->
-  <div class="top-bar">
-    <div style="display:flex; gap:14px; align-items:center;">
-      <a href="/" class="nav-link">← Menu Hub</a>
-      <a href="setlist.html" class="nav-link">🎵 Scaletta & Testi</a>
-    </div>
-    <div class="midi-selector-wrap">
-      <select id="midiOutputSelect" class="midi-select">
-        <option value="">Ricerca MIDI...</option>
-      </select>
-      <span id="midiStatus" style="font-size:12px; font-weight:bold; color:#f44336;">OFFLINE</span>
-    </div>
-  </div>
-
-  <!-- DISPLAY RETROILLUMINATO BLU TC-HELICON VOICELIVE 2 -->
-  <div class="vl2-lcd">
-    <div class="lcd-header">
-      <span id="lcdPresetBank">TC-HELICON • VOICELIVE 2</span>
-      <span id="lcdSongCounter">[ 0 / 0 ]</span>
-    </div>
-    <div class="lcd-main-line">
-      <div class="lcd-preset-num" id="lcdPresetNum">P---</div>
-      <div class="lcd-song-title" id="lcdSongTitle">Nessun Brano Selezionato</div>
-    </div>
-    <div class="lcd-footer">
-      <span id="lcdMidiFeedback">CANALE 1 • CAVO USB / BLE</span>
-      <span id="lcdNextSong">PROSSIMA: --</span>
-    </div>
-  </div>
-
-  <!-- SCELTA RAPIDA DALLA SCALETTA ATTIVA -->
-  <div class="setlist-quick-select">
-    <select id="songSelectDropdown" onchange="selectSongByIndex(this.value)">
-      <option value="">-- Seleziona Brano dalla Scaletta --</option>
+<div class="nav-header">
+  <a href="/">← Torna al Menu Principale</a>
+  <div style="display:flex; gap:10px; align-items:center;">
+    <a href="setlist.html" style="color:#25d366;">🎵 Scaletta Completa</a>
+    <select id="midiOutputSelect" style="background:#171a21; border:1px solid #333a46; color:#fff; font-size:12px; border-radius:4px; padding:4px 8px;">
+      <option value="">Ricerca MIDI...</option>
     </select>
   </div>
+</div>
 
-  <!-- RIGA 1 EFFETTI: HARMONY, DOUBLE, REVERB, DELAY -->
-  <div class="stomp-grid">
-    <div class="stomp-box" id="stomp-110" onclick="toggleEffect(110)">
-      <div class="stomp-name">Harmony</div>
-      <div class="stomp-sub">CC 110</div>
-      <div class="stomp-button"></div>
-      <div class="stomp-led"></div>
-    </div>
+<!-- CASE HARDWARE VOICELIVE 2 -->
+<div class="vl2-chassis">
 
-    <div class="stomp-box" id="stomp-111" onclick="toggleEffect(111)">
-      <div class="stomp-name">Double</div>
-      <div class="stomp-sub">CC 111</div>
-      <div class="stomp-button"></div>
-      <div class="stomp-led"></div>
-    </div>
-
-    <div class="stomp-box" id="stomp-112" onclick="toggleEffect(112)">
-      <div class="stomp-name">Reverb</div>
-      <div class="stomp-sub">CC 112</div>
-      <div class="stomp-button"></div>
-      <div class="stomp-led"></div>
-    </div>
-
-    <div class="stomp-box" id="stomp-117" onclick="toggleEffect(117)">
-      <div class="stomp-name">Delay</div>
-      <div class="stomp-sub">CC 117</div>
-      <div class="stomp-button"></div>
-      <div class="stomp-led"></div>
-    </div>
+  <!-- FASCIA BRAND TC-HELICON / VOICELIVE 2 -->
+  <div class="brand-bar">
+    <div class="brand-box">TC-HELICON</div>
+    <div class="brand-vl2">VOICELIVE 2</div>
   </div>
 
-  <!-- RIGA 2: µMOD, TRANSDUCER, HARDTUNE + PEDALI CAMBIO BRANO -->
-  <div class="stomp-grid">
-    <div class="stomp-box" id="stomp-116" onclick="toggleEffect(116)">
-      <div class="stomp-name">µMod</div>
-      <div class="stomp-sub">CC 116</div>
-      <div class="stomp-button"></div>
-      <div class="stomp-led"></div>
+  <!-- PANNELLO SUPERIORE -->
+  <div class="upper-panel">
+    
+    <!-- TASTI FUNZIONE GOMMOSI + TONDI -->
+    <div class="function-cluster">
+      <div class="func-row">
+        <div class="btn-rubber active" id="btn-tone" onclick="toggleUpperBtn(this)"><div class="led-dot"></div><div class="btn-label">Tone</div></div>
+        <div class="btn-rubber active" id="btn-pitch" onclick="toggleUpperBtn(this)"><div class="led-dot"></div><div class="btn-label">Pitch</div></div>
+        <div class="btn-rubber" id="btn-gtr" onclick="toggleUpperBtn(this)"><div class="led-dot"></div><div class="btn-label">Guitar FX</div></div>
+        <div class="btn-rubber" id="btn-home" onclick="toggleUpperBtn(this)"><div class="led-dot"></div><div class="btn-label">Home</div></div>
+      </div>
+      <div class="round-btn-row">
+        <div class="btn-round" onclick="loadPrevSong()">Setup</div>
+        <div class="btn-round" onclick="loadNextSong()">Wizard</div>
+        <div class="btn-round" onclick="alert('Preset salvato nella memoria locale!')">Store</div>
+        <div class="btn-round" onclick="window.location.href='setlist.html'">Edit</div>
+      </div>
     </div>
 
-    <div class="stomp-box" id="stomp-118" onclick="toggleEffect(118)">
-      <div class="stomp-name">Transducer</div>
-      <div class="stomp-sub">CC 118</div>
-      <div class="stomp-button"></div>
-      <div class="stomp-led"></div>
+    <!-- SCHERMO LCD BLU ORIGINALE + 4 MANOPOLE MIX -->
+    <div class="lcd-assembly">
+      <div class="lcd-screen">
+        <div class="lcd-top-line">
+          <span id="lcd-bank-label">BANK 1 - FULL HARMONY</span>
+          <span id="lcd-midi-indicator">MIDI CH: 1 [USB]</span>
+        </div>
+        <div class="lcd-main-line">
+          <div class="lcd-preset-id" id="lcdPresetId">042</div>
+          <div class="lcd-preset-title" id="lcdPresetTitle">HOTEL CALIFORNIA</div>
+        </div>
+        <div class="lcd-sub-line">
+          <span id="lcdKey">NATPLAY: GTR</span>
+          <span id="lcdNextSongTitle">NEXT: SWEET CHILD</span>
+        </div>
+      </div>
+
+      <!-- 4 MINI MANOPOLE SOTTO IL DISPLAY -->
+      <div class="knobs-row">
+        <div class="knob-unit"><div class="knob-head"></div></div>
+        <div class="knob-unit"><div class="knob-head"></div></div>
+        <div class="knob-unit" style="font-size:9px; color:#58647a; font-weight:bold;">Mix</div>
+        <div class="knob-unit"><div class="knob-head"></div></div>
+        <div class="knob-unit"><div class="knob-head"></div></div>
+      </div>
     </div>
 
-    <!-- PEDALE PRECEDENTE -->
-    <div class="stomp-box stomp-nav" onclick="prevSong()">
-      <div class="stomp-name">◀ PREV</div>
-      <div class="stomp-sub">Canzone Prec.</div>
-      <div class="stomp-button"></div>
-      <div style="height:14px;"></div>
+    <!-- JOG WHEEL E NAVIGATE -->
+    <div class="jog-cluster">
+      <div class="jog-wheel" onclick="loadNextSong()">
+        <div class="jog-center-dot"></div>
+      </div>
+      <div class="navigate-bar">
+        <span class="nav-arrow" onclick="loadPrevSong()">◄</span>
+        <span>Navigate</span>
+        <span class="nav-arrow" onclick="loadNextSong()">►</span>
+      </div>
     </div>
 
-    <!-- PEDALE SUCCESSIVO -->
-    <div class="stomp-box stomp-nav" onclick="nextSong()">
-      <div class="stomp-name">NEXT ▶</div>
-      <div class="stomp-sub">Canzone Succ.</div>
-      <div class="stomp-button"></div>
-      <div style="height:14px;"></div>
+  </div>
+
+  <!-- PANNELLO PEDALI INFERIORE (10 FOOSWITCH IDENTICI ALLA FOTO) -->
+  <div class="footswitch-panel">
+
+    <!-- FILA SUPERIORE: PRESET ▲ | SHORTCUT | (divisore) | µMOD | DELAY | REVERB -->
+    <div class="stomp-row">
+      
+      <!-- 1. PRESET UP -->
+      <div class="stomp-unit" onclick="loadNextSong()">
+        <div class="stomp-title">PRESET</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+        <div class="arrow-indicator">▲</div>
+      </div>
+
+      <!-- 2. SHORTCUT -->
+      <div class="stomp-unit" id="stomp-shortcut" onclick="toggleShortcut()">
+        <div class="stomp-title">SHORTCUT</div>
+        <div class="stomp-subtitle">TAP / HARDTUNE</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
+      <div class="divider-line"></div>
+
+      <!-- 3. µMOD (CC 116) -->
+      <div class="stomp-unit" id="stomp-116" onclick="toggleEffectCC(116)">
+        <div class="stomp-title">µMOD</div>
+        <div class="stomp-subtitle">CHORUS / FLANGE</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
+      <!-- 4. DELAY (CC 117) -->
+      <div class="stomp-unit" id="stomp-117" onclick="toggleEffectCC(117)">
+        <div class="stomp-title">DELAY</div>
+        <div class="stomp-subtitle">ECHO</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
+      <!-- 5. REVERB (CC 112) -->
+      <div class="stomp-unit" id="stomp-112" onclick="toggleEffectCC(112)">
+        <div class="stomp-title">REVERB</div>
+        <div class="stomp-subtitle" style="font-size:7px;">HOLD FOR MIC GAIN</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
     </div>
+
+    <!-- FILA INFERIORE: PRESET ▼ | STEP | (divisore) | HARMONY | DOUBLE | FX -->
+    <div class="stomp-row">
+      
+      <!-- 6. PRESET DOWN -->
+      <div class="stomp-unit" onclick="loadPrevSong()">
+        <div class="stomp-title">PRESET</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+        <div class="arrow-indicator">▼</div>
+      </div>
+
+      <!-- 7. STEP -->
+      <div class="stomp-unit" id="stomp-step" onclick="handleStep()">
+        <div class="stomp-title">STEP</div>
+        <div class="stomp-subtitle">PART / BRIDGE</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
+      <div class="divider-line"></div>
+
+      <!-- 8. HARMONY (CC 110) -->
+      <div class="stomp-unit" id="stomp-110" onclick="toggleEffectCC(110)">
+        <div class="stomp-title">HARMONY</div>
+        <div class="stomp-subtitle">VOICES</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
+      <!-- 9. DOUBLE (CC 111) -->
+      <div class="stomp-unit" id="stomp-111" onclick="toggleEffectCC(111)">
+        <div class="stomp-title">DOUBLE</div>
+        <div class="stomp-subtitle">OVERDUB</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
+      <!-- 10. FX (CC 118 / Transducer / HardTune) -->
+      <div class="stomp-unit" id="stomp-118" onclick="toggleEffectCC(118)">
+        <div class="stomp-title">FX</div>
+        <div class="stomp-subtitle">TRANSDUCER / MOD</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
+    </div>
+
   </div>
 
 </div>
 
-<!-- MODULI MIDI CONDIVISI -->
+<!-- MODULI DI COMUNICAZIONE MIDI -->
 <script src="midi-core.js"></script>
 <script src="midi-manager.js"></script>
 
 <script>
   let songs = [];
-  let currentSongIndex = -1;
+  let currentSongIndex = 0;
 
-  // Mappatura stato Effetti CC (false = Spento, true = Acceso)
-  const fxState = {
-    110: false, // Harmony
-    111: false, // Double
-    112: false, // Reverb
-    113: false, // HardTune
-    116: false, // µMod
-    117: false, // Delay
-    118: false  // Transducer
+  // Mappatura stato Effetti CC[cite: 8]
+  const fxStates = {
+    110: false, // Harmony[cite: 8]
+    111: false, // Double[cite: 8]
+    112: false, // Reverb[cite: 8]
+    116: false, // µMod[cite: 8]
+    117: false, // Delay[cite: 8]
+    118: false  // FX / Transducer[cite: 8]
   };
 
-  // AVVIO
   window.addEventListener("load", async () => {
-    // 1. Inizializza MIDI per Cavo USB e SK-7
-    await MidiManager.init("midiOutputSelect", "midiStatus");
+    // 1. Inizializzazione Cavo USB / SK-7[cite: 11]
+    await MidiManager.init("midiOutputSelect");
 
-    // 2. Carica la scaletta condivisa salvata da setlist.html
+    // 2. Carica la scaletta attiva da localStorage[cite: 12]
     loadSetlist();
   });
 
-  // CARICAMENTO SCALETTA DA LOCALSTORAGE
   function loadSetlist() {
     const saved = localStorage.getItem("voicelive_setlist");
-    const dropdown = document.getElementById("songSelectDropdown");
-
     if (saved) {
       try {
         songs = JSON.parse(saved);
@@ -379,87 +591,90 @@
       }
     }
 
-    dropdown.innerHTML = '<option value="">-- Seleziona Brano dalla Scaletta --</option>';
-
-    if (songs && songs.length > 0) {
-      songs.forEach((song, idx) => {
-        const opt = document.createElement("option");
-        opt.value = idx;
-        opt.textContent = `${idx + 1}. ${song.title} (Preset ${song.preset})`;
-        dropdown.appendChild(opt);
-      });
-
-      // Seleziona il primo brano all'avvio
-      selectSongByIndex(0);
-    } else {
-      document.getElementById("lcdSongTitle").textContent = "Nessuna scaletta salvata";
-      document.getElementById("lcdPresetNum").textContent = "P---";
+    if (!songs || songs.length === 0) {
+      songs = [
+        { title: "Hotel California", preset: 42 },
+        { title: "Sweet Child O' Mine", preset: 5 },
+        { title: "Bohemian Rhapsody", preset: 15 }
+      ];
     }
+
+    applySongToUnit(0);
   }
 
-  // SELEZIONE BRANO E CAMBIO PRESET SUL VL2
-  function selectSongByIndex(index) {
-    if (index === "" || index < 0 || index >= songs.length) return;
-
-    currentSongIndex = parseInt(index, 10);
+  function applySongToUnit(index) {
+    if (index < 0 || index >= songs.length) return;
+    currentSongIndex = index;
     const song = songs[currentSongIndex];
 
-    // 1. Invia il Program Change al VoiceLive 2 (Preset - 1)
-    const presetNumber = parseInt(song.preset, 10);
-    MidiManager.sendProgramChange(presetNumber - 1);
+    const presetNum = parseInt(song.preset, 10) || 1;
 
-    // 2. Aggiorna il Display LCD VL2
-    document.getElementById("lcdPresetNum").textContent = `P${String(presetNumber).padStart(3, '0')}`;
-    document.getElementById("lcdSongTitle").textContent = song.title;
-    document.getElementById("lcdSongCounter").textContent = `[ ${currentSongIndex + 1} / ${songs.length} ]`;
+    // 1. Invio Program Change al VoiceLive 2 via USB/Bluetooth[cite: 11, 12]
+    MidiManager.sendProgramChange(presetNum - 1); // Preset base 0 in MIDI[cite: 2, 11]
+
+    // 2. Aggiornamento LCD VoiceLive 2
+    document.getElementById("lcdPresetId").textContent = String(presetNum).padStart(3, '0');
+    document.getElementById("lcdPresetTitle").textContent = (song.title || "UNTITLED").toUpperCase();
+    
+    const bankNumber = Math.floor((presetNum - 1) / 128) + 1;
+    document.getElementById("lcd-bank-label").textContent = `BANK ${bankNumber} - PRESET ${presetNum}`;
 
     const nextSong = songs[currentSongIndex + 1];
-    document.getElementById("lcdNextSong").textContent = nextSong 
-      ? `PROSSIMA: ${nextSong.title.substring(0, 18)}...` 
-      : "FINE SCALETTA";
-
-    document.getElementById("songSelectDropdown").value = currentSongIndex;
+    document.getElementById("lcdNextSongTitle").textContent = nextSong 
+      ? `NEXT: ${nextSong.title.substring(0, 14).toUpperCase()}` 
+      : "END OF SETLIST";
   }
 
-  // CAMBIO BRANO VIA PEDALI STOMP PREV / NEXT
-  function prevSong() {
-    if (songs.length === 0) return;
-    let newIdx = currentSongIndex - 1;
-    if (newIdx < 0) newIdx = songs.length - 1;
-    selectSongByIndex(newIdx);
+  function loadNextSong() {
+    let nextIdx = currentSongIndex + 1;
+    if (nextIdx >= songs.length) nextIdx = 0;
+    applySongToUnit(nextIdx);
   }
 
-  function nextSong() {
-    if (songs.length === 0) return;
-    let newIdx = currentSongIndex + 1;
-    if (newIdx >= songs.length) newIdx = 0;
-    selectSongByIndex(newIdx);
+  function loadPrevSong() {
+    let prevIdx = currentSongIndex - 1;
+    if (prevIdx < 0) prevIdx = songs.length - 1;
+    applySongToUnit(prevIdx);
   }
 
-  // CONTROLLO EFFETTI CC IN TEMPO REALE
-  async function toggleEffect(cc) {
-    const newState = !fxState[cc];
-    const val = newState ? 127 : 0;
+  // Toggle Effetti CC e Anello LED Rosso[cite: 8]
+  async function toggleEffectCC(cc) {
+    fxStates[cc] = !fxStates[cc];
+    const val = fxStates[cc] ? 127 : 0;
 
-    // 1. Invio comando via cavo USB (MidiManager)
+    // Invio comando CC tramite MidiManager (Cavo USB)[cite: 11]
     if (MidiManager.activeOutput) {
       MidiManager.sendControlChange(cc, val);
     }
 
-    // 2. Fallback via Bluetooth SK-7 (se attivo)
-    if (typeof midiCharacteristic !== 'undefined' && midiCharacteristic) {
-      try {
-        const packet = new Uint8Array([0x80, 0x80, 0xB0 | MidiManager.midiChannel, cc, val]);
-        await midiCharacteristic.writeValue(packet);
-      } catch (e) {}
-    }
-
-    // Aggiorna stato e grafica dello Stomp Switch
-    fxState[cc] = newState;
+    // Aggiornamento grafico dell'anello halo rosso
     const stompEl = document.getElementById("stomp-" + cc);
     if (stompEl) {
-      stompEl.classList.toggle("active", newState);
+      stompEl.classList.toggle("active", fxStates[cc]);
     }
+  }
+
+  // Shortcut (HardTune CC 113)[cite: 8]
+  let shortcutActive = false;
+  function toggleShortcut() {
+    shortcutActive = !shortcutActive;
+    if (MidiManager.activeOutput) {
+      MidiManager.sendControlChange(113, shortcutActive ? 127 : 0);
+    }
+    document.getElementById("stomp-shortcut").classList.toggle("active", shortcutActive);
+  }
+
+  // Step Switch (Simulazione step / Bridge)
+  let stepActive = false;
+  function handleStep() {
+    stepActive = !stepActive;
+    const el = document.getElementById("stomp-step");
+    el.classList.add("active");
+    setTimeout(() => el.classList.remove("active"), 200);
+  }
+
+  function toggleUpperBtn(el) {
+    el.classList.toggle("active");
   }
 </script>
 
