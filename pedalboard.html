@@ -619,7 +619,7 @@
 
   function safeSendCC(cc, val) {
     try {
-      if (window.MidiManager && MidiManager.activeOutput && typeof MidiManager.sendControlChange === "function") {
+      if (typeof MidiManager !== "undefined" && MidiManager.activeOutput) {
         MidiManager.sendControlChange(cc, val);
         return true;
       }
@@ -631,7 +631,7 @@
 
   function safeSendPC(pc) {
     try {
-      if (window.MidiManager && MidiManager.activeOutput && typeof MidiManager.sendProgramChange === "function") {
+      if (typeof MidiManager !== "undefined" && MidiManager.activeOutput) {
         MidiManager.sendProgramChange(pc);
         return true;
       }
@@ -643,7 +643,7 @@
 
   window.addEventListener("load", async () => {
     try {
-      if (window.MidiManager && typeof MidiManager.init === "function") {
+      if (typeof MidiManager !== "undefined") {
         await MidiManager.init("midiOutputSelect", "midiStatus");
         logAction("MIDI Manager attivo (USB/BLE).");
       }
