@@ -425,17 +425,17 @@
     <!-- TASTI SUPERIORI GOMMOSI -->
     <div class="function-cluster">
       <div class="func-row">
-        <!-- TONE (Mappato al volo su CC 119) -->
+        <!-- TONE (CC 119) -->
         <div class="btn-rubber" id="btn-tone" onclick="toggleEffectCC(119, 'btn-tone')">
           <div class="led-dot"></div>
           <div class="btn-label">Tone</div>
         </div>
-        <!-- PITCH (Pitch Correct CC 107) -->
+        <!-- PITCH (CC 107) -->
         <div class="btn-rubber" id="btn-pitch" onclick="toggleEffectCC(107, 'btn-pitch')">
           <div class="led-dot"></div>
           <div class="btn-label">Pitch</div>
         </div>
-        <!-- GUITAR FX (Guitar Gain CC 109) -->
+        <!-- GUITAR FX (CC 109) -->
         <div class="btn-rubber" id="btn-gtr" onclick="toggleEffectCC(109, 'btn-gtr')">
           <div class="led-dot"></div>
           <div class="btn-label">Guitar FX</div>
@@ -740,7 +740,7 @@
 
     const sent = safeSendCC(cc, val);
 
-    // Accende/spegne la grafica
+    // Accende/spegne la grafica del pulsante/pedale corrispondente
     const el = document.getElementById(elementId);
     if (el) {
       el.classList.toggle("active", fxStates[cc]);
