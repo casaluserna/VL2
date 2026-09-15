@@ -422,18 +422,18 @@
 
   <div class="upper-panel">
     
-    <!-- TASTI SUPERIORI -->
+    <!-- TASTI SUPERIORI GOMMOSI -->
     <div class="function-cluster">
       <div class="func-row">
-        <!-- TONE (Pitch Correct CC 107) -->
-        <div class="btn-rubber" id="btn-tone" onclick="toggleEffectCC(107, 'btn-tone')">
+        <!-- TONE (Mappato al volo su CC 119) -->
+        <div class="btn-rubber" id="btn-tone" onclick="toggleEffectCC(119, 'btn-tone')">
           <div class="led-dot"></div>
-          <div class="btn-label">Tone (Pitch)</div>
+          <div class="btn-label">Tone</div>
         </div>
-        <!-- PITCH (HardTune CC 108) -->
-        <div class="btn-rubber" id="btn-pitch" onclick="toggleEffectCC(108, 'btn-pitch')">
+        <!-- PITCH (Pitch Correct CC 107) -->
+        <div class="btn-rubber" id="btn-pitch" onclick="toggleEffectCC(107, 'btn-pitch')">
           <div class="led-dot"></div>
-          <div class="btn-label">Pitch (HardT)</div>
+          <div class="btn-label">Pitch</div>
         </div>
         <!-- GUITAR FX (Guitar Gain CC 109) -->
         <div class="btn-rubber" id="btn-gtr" onclick="toggleEffectCC(109, 'btn-gtr')">
@@ -582,7 +582,7 @@
 
 <!-- FINESTRA LOG A 2 RIGHE -->
 <div class="log-box-2lines" id="logBox">
-  <div class="log-line" id="logLine1">[SISTEMA] VoiceLive 2 Mappato su CSV.</div>
+  <div class="log-line" id="logLine1">[SISTEMA] VoiceLive 2 Virtual Unit Caricata.</div>
   <div class="log-line" id="logLine2">Seleziona un'interfaccia MIDI per iniziare...</div>
 </div>
 
@@ -593,12 +593,24 @@
 <script>
   let songs = [];
   let currentSongIndex = 0;
-  const logLines = ["VoiceLive 2 CSV Map Online.", "In attesa di comandi MIDI..."];
+  const logLines = ["VoiceLive 2 Online.", "In attesa di comandi MIDI..."];
 
-  // Mappa di stato degli effetti (tutti i CC dal CSV)
-  const fxStates = {};
+  // Mappa di stato degli effetti
+  const fxStates = {
+    110: false, // Harmony
+    111: false, // Double
+    112: false, // Reverb
+    116: false, // µMod
+    117: false, // Delay
+    103: false, // FX/Transducer
+    114: false, // Talk/Bypass
+    119: false, // Tone
+    107: false, // Pitch
+    109: false, // Guitar FX
+    87:  false  // Step/Hit
+  };
 
-  // Nomi ufficiali dal CSV per il Log
+  // Nomi per il Log
   const ccNames = {
     110: "Harmony",
     111: "Double",
@@ -607,9 +619,9 @@
     117: "Delay",
     103: "FX/Transducer",
     114: "Talk/Bypass",
-    108: "HardTune (Pitch)",
-    107: "Pitch Correct (Tone)",
-    109: "Guitar Gain",
+    119: "Tone",
+    107: "Pitch Correct",
+    109: "Guitar FX",
     87:  "Step/Hit"
   };
 
