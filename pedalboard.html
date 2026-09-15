@@ -3,7 +3,760 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TC-Helicon VoiceLive 2 - Virtual Unit</title><!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TC-Helicon VoiceLive 2 - Virtual Unit</title>
+
+<style>
+  :root {
+    --vl-body: #17181c;
+    --vl-upper: #111215;
+    --vl-blue: #0099cc;
+    --lcd-bg: #009ce6;
+    --lcd-color: #001e38;
+    --led-red-off: #3d0d0d;
+    --led-red-on: #ff2222;
+    --glow-red: 0 0 16px rgba(255, 34, 34, 0.9), inset 0 0 8px rgba(255, 34, 34, 0.8);
+    --ring-off: #2a2020;
+  }
+
+  * { box-sizing: border-box; touch-action: manipulation; user-select: none; }
+
+  body {
+    margin: 0;
+    padding: 12px;
+    background: #08090b;
+    color: #e6edf3;
+    font-family: Arial, Helvetica, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .nav-header {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 6px;
+  }
+  .nav-header a {
+    color: #58a6ff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+  }
+
+  /* CHASSIS HARDWARE */
+  .vl2-chassis {
+    width: 100%;
+    max-width: 900px;
+    background: var(--vl-body);
+    border: 3px solid #303540;
+    border-radius: 20px 20px 14px 14px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.9), inset 0 2px 3px rgba(255,255,255,0.08);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .brand-bar {
+    height: 24px;
+    background: #0e1014;
+    border-bottom: 2px solid #000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px;
+  }
+  .brand-box {
+    background: var(--vl-blue);
+    color: #fff;
+    font-weight: 900;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .brand-vl2 {
+    color: #fff;
+    font-weight: 900;
+    font-size: 12px;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #0077aa, var(--vl-blue));
+    padding: 2px 10px;
+    border-radius: 2px;
+  }
+
+  /* PANNELLO SUPERIORE */
+  .upper-panel {
+    background: linear-gradient(180deg, #191b20 0%, #101114 100%);
+    border-bottom: 3px solid #0a0b0d;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 200px 1fr 140px;
+    gap: 15px;
+    align-items: center;
+  }
+
+  @media (max-width: 768px) {
+    .upper-panel { grid-template-columns: 1fr; gap: 12px; }
+  }
+
+  .function-cluster {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .func-row {
+    display: flex;
+    gap: 6px;
+    justify-content: space-between;
+  }
+  .btn-rubber {
+    flex: 1;
+    background: #252830;
+    border: 1px solid #3c4250;
+    border-radius: 6px;
+    padding: 6px 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.15), 0 2px 4px #000;
+  }
+  .btn-rubber:active { transform: translateY(1px); }
+  .btn-rubber.active { border-color: #883030; background: #2f2224; }
+  
+  .led-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--led-red-off);
+    border: 1px solid #000;
+  }
+  .btn-rubber.active .led-dot {
+    background: var(--led-red-on);
+    box-shadow: 0 0 6px #ff2222;
+  }
+  .btn-label { font-size: 9px; font-weight: bold; text-transform: uppercase; color: #a6b0c2; }
+
+  .round-btn-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .btn-round {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #202227;
+    border: 1px solid #3b3f4d;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 2px 4px #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: bold;
+    color: #9da6b8;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  /* DISPLAY LCD BLU */
+  .lcd-assembly {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .lcd-screen {
+    width: 100%;
+    background: var(--lcd-bg);
+    border: 4px solid #14171d;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--lcd-color);
+    box-shadow: inset 0 0 16px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.8);
+    font-family: monospace;
+  }
+  .lcd-top-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(0, 30, 56, 0.4);
+    padding-bottom: 3px;
+    margin-bottom: 4px;
+  }
+  .lcd-main-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .lcd-preset-id {
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  .lcd-preset-title {
+    font-size: 18px;
+    font-weight: 900;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 240px;
+  }
+  .lcd-sub-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    font-weight: bold;
+    margin-top: 4px;
+  }
+
+  .knobs-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    align-items: center;
+  }
+  .knob-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .knob-head {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #333842 0%, #17191d 80%);
+    border: 2px solid #000;
+    box-shadow: 0 2px 4px #000;
+  }
+
+  .jog-cluster {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .jog-wheel {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #292d36 30%, #15171b 90%);
+    border: 3px solid #0a0b0d;
+    box-shadow: 0 6px 10px #000, inset 0 2px 4px rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .jog-center-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #0d0f12;
+    box-shadow: inset 0 1px 2px #000;
+  }
+  .navigate-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    font-weight: bold;
+    color: #9da6b8;
+  }
+  .nav-arrow {
+    background: #202227;
+    border: 1px solid #3b3f4d;
+    border-radius: 4px;
+    padding: 3px 6px;
+    cursor: pointer;
+  }
+
+  /* PANNELLO PEDALI INFERIORE (10 PEDALI) */
+  .footswitch-panel {
+    padding: 24px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background: #14161a;
+  }
+
+  .stomp-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 12px 1fr 1fr 1fr;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .divider-line {
+    width: 2px;
+    height: 80px;
+    background: #2a2e38;
+    margin: auto;
+  }
+
+  @media (max-width: 650px) {
+    .stomp-row {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px 8px;
+    }
+    .divider-line { display: none; }
+  }
+
+  .stomp-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    cursor: pointer;
+  }
+  .stomp-title {
+    font-size: 14px;
+    font-weight: 900;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    text-align: center;
+    min-height: 18px;
+  }
+  .stomp-subtitle {
+    font-size: 9px;
+    font-weight: bold;
+    color: #7b8394;
+    text-transform: uppercase;
+    margin-top: 2px;
+    min-height: 12px;
+  }
+
+  .stomp-ring {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    margin-top: 10px;
+    background: var(--ring-off);
+    border: 3px solid #1c1818;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 3px 6px #090a0d;
+    transition: all 0.12s ease;
+  }
+  .stomp-unit.active .stomp-ring {
+    background: var(--led-red-on);
+    border-color: #ff7777;
+    box-shadow: var(--glow-red);
+  }
+
+  .stomp-metal-plunger {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #a6b0c2 45%, #464c58 100%);
+    border: 2px solid #232730;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.9), inset 0 1px 2px rgba(255,255,255,0.8);
+    transition: transform 0.08s ease;
+  }
+  .stomp-unit:active .stomp-metal-plunger {
+    transform: scale(0.92);
+  }
+
+  .arrow-indicator {
+    font-size: 16px;
+    color: #9aa5b8;
+    margin-top: 4px;
+  }
+
+  /* FINESTRA LOG A 2 RIGHE */
+  .log-box-2lines {
+    width: 100%;
+    max-width: 900px;
+    height: 52px;
+    margin-top: 14px;
+    background: #080a0d;
+    border: 1px solid #232730;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: monospace;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #52c8ff;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .log-line {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="nav-header">
+  <a href="/">← Torna al Menu Principale</a>
+  <div style="display:flex; gap:10px; align-items:center;">
+    <a href="setlist.html" style="color:#25d366;">🎵 Scaletta & Testi</a>
+    <select id="midiOutputSelect" style="background:#171a21; border:1px solid #333a46; color:#fff; font-size:12px; border-radius:4px; padding:4px 8px;">
+      <option value="">Ricerca MIDI...</option>
+    </select>
+    <span id="midiStatus" style="font-size:11px; font-weight:bold; color:#f59e0b;">INIT</span>
+  </div>
+</div>
+
+<div class="vl2-chassis">
+
+  <div class="brand-bar">
+    <div class="brand-box">TC-HELICON</div>
+    <div class="brand-vl2">VOICELIVE 2</div>
+  </div>
+
+  <div class="upper-panel">
+    
+    <!-- TASTI SUPERIORI -->
+    <div class="function-cluster">
+      <div class="func-row">
+        <!-- TONE (Pitch Correct CC 107) -->
+        <div class="btn-rubber" id="btn-tone" onclick="toggleEffectCC(107, 'btn-tone')">
+          <div class="led-dot"></div>
+          <div class="btn-label">Tone (Pitch)</div>
+        </div>
+        <!-- PITCH (HardTune CC 108) -->
+        <div class="btn-rubber" id="btn-pitch" onclick="toggleEffectCC(108, 'btn-pitch')">
+          <div class="led-dot"></div>
+          <div class="btn-label">Pitch (HardT)</div>
+        </div>
+        <!-- GUITAR FX (Guitar Gain CC 109) -->
+        <div class="btn-rubber" id="btn-gtr" onclick="toggleEffectCC(109, 'btn-gtr')">
+          <div class="led-dot"></div>
+          <div class="btn-label">Guitar FX</div>
+        </div>
+        <!-- HOME (Riallinea Preset) -->
+        <div class="btn-rubber" id="btn-home" onclick="handleHomeBtn()">
+          <div class="led-dot"></div>
+          <div class="btn-label">Home</div>
+        </div>
+      </div>
+
+      <div class="round-btn-row">
+        <div class="btn-round" onclick="loadPrevSong()">Setup</div>
+        <div class="btn-round" onclick="loadNextSong()">Wizard</div>
+        <div class="btn-round" onclick="logAction('Preset salvato nella memoria.')">Store</div>
+        <div class="btn-round" onclick="window.location.href='setlist.html'">Edit</div>
+      </div>
+    </div>
+
+    <!-- DISPLAY LCD BLU -->
+    <div class="lcd-assembly">
+      <div class="lcd-screen">
+        <div class="lcd-top-line">
+          <span id="lcd-bank-label">BANK 1 - FULL HARMONY</span>
+          <span id="lcd-midi-indicator">MIDI CH: 1 [USB]</span>
+        </div>
+        <div class="lcd-main-line">
+          <div class="lcd-preset-id" id="lcdPresetId">042</div>
+          <div class="lcd-preset-title" id="lcdPresetTitle">HOTEL CALIFORNIA</div>
+        </div>
+        <div class="lcd-sub-line">
+          <span id="lcdKey">NATPLAY: GTR</span>
+          <span id="lcdNextSongTitle">NEXT: SWEET CHILD</span>
+        </div>
+      </div>
+
+      <div class="knobs-row">
+        <div class="knob-unit"><div class="knob-head"></div></div>
+        <div class="knob-unit"><div class="knob-head"></div></div>
+        <div class="knob-unit" style="font-size:9px; color:#58647a; font-weight:bold;">Mix</div>
+        <div class="knob-unit"><div class="knob-head"></div></div>
+        <div class="knob-unit"><div class="knob-head"></div></div>
+      </div>
+    </div>
+
+    <!-- JOG WHEEL -->
+    <div class="jog-cluster">
+      <div class="jog-wheel" onclick="loadNextSong()">
+        <div class="jog-center-dot"></div>
+      </div>
+      <div class="navigate-bar">
+        <span class="nav-arrow" onclick="loadPrevSong()">◄</span>
+        <span>Navigate</span>
+        <span class="nav-arrow" onclick="loadNextSong()">►</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PANNELLO FOOTSWITCH -->
+  <div class="footswitch-panel">
+
+    <div class="stomp-row">
+      <!-- 1. PRESET UP -->
+      <div class="stomp-unit" onclick="loadNextSong()">
+        <div class="stomp-title">PRESET</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+        <div class="arrow-indicator">▲</div>
+      </div>
+
+      <!-- 2. SHORTCUT (Talk Mode / Bypass CC 114) -->
+      <div class="stomp-unit" id="stomp-114" onclick="toggleEffectCC(114, 'stomp-114')">
+        <div class="stomp-title">SHORTCUT</div>
+        <div class="stomp-subtitle">TALK / BYPASS</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
+      <div class="divider-line"></div>
+
+      <!-- 3. µMOD (CC 116) -->
+      <div class="stomp-unit" id="stomp-116" onclick="toggleEffectCC(116, 'stomp-116')">
+        <div class="stomp-title">µMOD</div>
+        <div class="stomp-subtitle">CHORUS / FLANGE</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
+      <!-- 4. DELAY (CC 117) -->
+      <div class="stomp-unit" id="stomp-117" onclick="toggleEffectCC(117, 'stomp-117')">
+        <div class="stomp-title">DELAY</div>
+        <div class="stomp-subtitle">ECHO</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
+      <!-- 5. REVERB (CC 112) -->
+      <div class="stomp-unit" id="stomp-112" onclick="toggleEffectCC(112, 'stomp-112')">
+        <div class="stomp-title">REVERB</div>
+        <div class="stomp-subtitle" style="font-size:7px;">HOLD FOR MIC GAIN</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+    </div>
+
+    <div class="stomp-row">
+      <!-- 6. PRESET DOWN -->
+      <div class="stomp-unit" onclick="loadPrevSong()">
+        <div class="stomp-title">PRESET</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+        <div class="arrow-indicator">▼</div>
+      </div>
+
+      <!-- 7. STEP (Hit On/Off CC 87) -->
+      <div class="stomp-unit" id="stomp-87" onclick="toggleEffectCC(87, 'stomp-87')">
+        <div class="stomp-title">STEP</div>
+        <div class="stomp-subtitle">HIT / PART</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
+      <div class="divider-line"></div>
+
+      <!-- 8. HARMONY (CC 110) -->
+      <div class="stomp-unit" id="stomp-110" onclick="toggleEffectCC(110, 'stomp-110')">
+        <div class="stomp-title">HARMONY</div>
+        <div class="stomp-subtitle">VOICES</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
+      <!-- 9. DOUBLE (CC 111) -->
+      <div class="stomp-unit" id="stomp-111" onclick="toggleEffectCC(111, 'stomp-111')">
+        <div class="stomp-title">DOUBLE</div>
+        <div class="stomp-subtitle">OVERDUB</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+
+      <!-- 10. FX (Transducer CC 103) -->
+      <div class="stomp-unit" id="stomp-103" onclick="toggleEffectCC(103, 'stomp-103')">
+        <div class="stomp-title">FX</div>
+        <div class="stomp-subtitle">TRANSDUCER</div>
+        <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- FINESTRA LOG A 2 RIGHE -->
+<div class="log-box-2lines" id="logBox">
+  <div class="log-line" id="logLine1">[SISTEMA] VoiceLive 2 Mappato su CSV.</div>
+  <div class="log-line" id="logLine2">Seleziona un'interfaccia MIDI per iniziare...</div>
+</div>
+
+<!-- MODULI MIDI CONDIVISI -->
+<script src="midi-core.js"></script>
+<script src="midi-manager.js"></script>
+
+<script>
+  let songs = [];
+  let currentSongIndex = 0;
+  const logLines = ["VoiceLive 2 CSV Map Online.", "In attesa di comandi MIDI..."];
+
+  // Mappa di stato degli effetti (tutti i CC dal CSV)
+  const fxStates = {};
+
+  // Nomi ufficiali dal CSV per il Log
+  const ccNames = {
+    110: "Harmony",
+    111: "Double",
+    112: "Reverb",
+    116: "µMod",
+    117: "Delay",
+    103: "FX/Transducer",
+    114: "Talk/Bypass",
+    108: "HardTune (Pitch)",
+    107: "Pitch Correct (Tone)",
+    109: "Guitar Gain",
+    87:  "Step/Hit"
+  };
+
+  function logAction(msg) {
+    const time = new Date().toLocaleTimeString();
+    logLines.push("[" + time + "] " + msg);
+    if (logLines.length > 2) logLines.shift();
+    const l1 = document.getElementById("logLine1");
+    const l2 = document.getElementById("logLine2");
+    if (l1 && l2) {
+      l1.textContent = logLines[0];
+      l2.textContent = logLines[1];
+    }
+  }
+
+  function safeSendCC(cc, val) {
+    try {
+      if (typeof MidiManager !== "undefined" && MidiManager.activeOutput) {
+        MidiManager.sendControlChange(cc, val);
+        return true;
+      }
+    } catch (e) {
+      console.warn("Errore MIDI CC:", e);
+    }
+    return false;
+  }
+
+  function safeSendPC(pc) {
+    try {
+      if (typeof MidiManager !== "undefined" && MidiManager.activeOutput) {
+        MidiManager.sendProgramChange(pc);
+        return true;
+      }
+    } catch (e) {
+      console.warn("Errore MIDI PC:", e);
+    }
+    return false;
+  }
+
+  window.addEventListener("load", async () => {
+    try {
+      if (typeof MidiManager !== "undefined") {
+        await MidiManager.init("midiOutputSelect", "midiStatus");
+        logAction("MIDI Manager attivo (USB/BLE).");
+      }
+    } catch (e) {
+      logAction("Errore avvio MIDI: " + e.message);
+    }
+    loadSetlist();
+  });
+
+  function loadSetlist() {
+    try {
+      const saved = localStorage.getItem("voicelive_setlist");
+      if (saved) {
+        songs = JSON.parse(saved);
+      }
+    } catch (e) {
+      songs = [];
+    }
+
+    if (!songs || songs.length === 0) {
+      songs = [
+        { title: "Hotel California", preset: 42 }
+      ];
+    }
+
+    applySongToUnit(0);
+  }
+
+  function applySongToUnit(index) {
+    if (index < 0 || index >= songs.length) return;
+    currentSongIndex = index;
+    const song = songs[currentSongIndex];
+    const presetNum = parseInt(song.preset, 10) || 1;
+
+    const sent = safeSendPC(presetNum - 1);
+
+    const elId = document.getElementById("lcdPresetId");
+    const elTitle = document.getElementById("lcdPresetTitle");
+    const elBank = document.getElementById("lcd-bank-label");
+    const elNext = document.getElementById("lcdNextSongTitle");
+
+    if (elId) elId.textContent = String(presetNum).padStart(3, "0");
+    if (elTitle) elTitle.textContent = (song.title || "UNTITLED").toUpperCase();
+    
+    const bankNumber = Math.floor((presetNum - 1) / 128) + 1;
+    if (elBank) elBank.textContent = "BANK " + bankNumber + " - PRESET " + presetNum;
+
+    const nextSong = songs[currentSongIndex + 1];
+    if (elNext) {
+      elNext.textContent = nextSong 
+        ? "NEXT: " + nextSong.title.substring(0, 14).toUpperCase() 
+        : "END OF SETLIST";
+    }
+
+    logAction("Brano " + (currentSongIndex + 1) + "/" + songs.length + ": " + song.title + " (P" + presetNum + ")" + (sent ? "" : " [MIDI OFF]"));
+  }
+
+  function loadNextSong() {
+    let nextIdx = currentSongIndex + 1;
+    if (nextIdx >= songs.length) nextIdx = 0;
+    applySongToUnit(nextIdx);
+  }
+
+  function loadPrevSong() {
+    let prevIdx = currentSongIndex - 1;
+    if (prevIdx < 0) prevIdx = songs.length - 1;
+    applySongToUnit(prevIdx);
+  }
+
+  // FUNZIONE UNICA PER TUTTI I CC (Accende sia Stomp che Tasti gommosi)
+  function toggleEffectCC(cc, elementId) {
+    fxStates[cc] = !fxStates[cc];
+    const val = fxStates[cc] ? 127 : 0;
+
+    const sent = safeSendCC(cc, val);
+
+    // Accende/spegne la grafica
+    const el = document.getElementById(elementId);
+    if (el) {
+      el.classList.toggle("active", fxStates[cc]);
+    }
+
+    const label = ccNames[cc] || ("CC " + cc);
+    logAction(label + " -> " + (fxStates[cc] ? "ON" : "OFF") + (sent ? "" : " [MIDI OFF]"));
+  }
+
+  function handleHomeBtn() {
+    const homeBtn = document.getElementById("btn-home");
+    if (homeBtn) homeBtn.classList.add("active");
+    applySongToUnit(currentSongIndex);
+    setTimeout(() => {
+      if (homeBtn) homeBtn.classList.remove("active");
+    }, 250);
+    logAction("HOME: Reset su preset " + songs[currentSongIndex].preset);
+  }
+
+</script>
+
+</body>
+</html>
 
 <style>
   :root {
