@@ -60,7 +60,7 @@
     overflow: hidden;
   }
 
-  /* BARRA SUPERIORE AZZURRA BRAND */
+  /* BARRA AZZURRA LOGO */
   .brand-bar {
     height: 24px;
     background: #0e1014;
@@ -89,7 +89,7 @@
     border-radius: 2px;
   }
 
-  /* PANNELLO SUPERIORE (SCHERMO, TASTI, JOG WHEEL) */
+  /* PANNELLO SUPERIORE */
   .upper-panel {
     background: linear-gradient(180deg, #191b20 0%, #101114 100%);
     border-bottom: 3px solid #0a0b0d;
@@ -104,7 +104,7 @@
     .upper-panel { grid-template-columns: 1fr; gap: 12px; }
   }
 
-  /* PULSANTI TONE, PITCH, GUITAR FX, HOME */
+  /* CLUSTER TASTI GOMMOSI */
   .function-cluster {
     display: flex;
     flex-direction: column;
@@ -166,7 +166,7 @@
     cursor: pointer;
   }
 
-  /* DISPLAY LCD BLU TC-HELICON */
+  /* DISPLAY LCD RETROILLUMINATO BLU */
   .lcd-assembly {
     display: flex;
     flex-direction: column;
@@ -240,7 +240,7 @@
     box-shadow: 0 2px 4px #000;
   }
 
-  /* JOG WHEEL E FRECCE NAVIGATE */
+  /* JOG WHEEL E FRECCE */
   .jog-cluster {
     display: flex;
     flex-direction: column;
@@ -283,7 +283,7 @@
   }
 
   /* =========================================================
-     PANNELLO PEDALI INFERIORE (DISPOSIZIONE ORIGINALE FOTO)
+     PANNELLO PEDALI INFERIORE (DISPOSIZIONE 2x5)
      ========================================================= */
   .footswitch-panel {
     padding: 24px 16px 20px;
@@ -315,7 +315,7 @@
     .divider-line { display: none; }
   }
 
-  /* SINGOLO STOMPSWITCH */
+  /* SINGOLO FOOTSWITCH */
   .stomp-unit {
     display: flex;
     flex-direction: column;
@@ -341,7 +341,7 @@
     min-height: 12px;
   }
 
-  /* ANELLO LED LUMINOSO CIRCOLARE ROSSO (COME DA FOTO) */
+  /* ANELLO LED CIRCOLARE ROSSO */
   .stomp-ring {
     width: 62px;
     height: 62px;
@@ -361,7 +361,7 @@
     box-shadow: var(--glow-red);
   }
 
-  /* PULSANTE METALLICO CROMATO */
+  /* PISTONE CROMATO */
   .stomp-metal-plunger {
     width: 34px;
     height: 34px;
@@ -375,11 +375,18 @@
     transform: scale(0.92);
   }
 
-  /* FRECCE SOTTO IL PEDALE PRESET */
   .arrow-indicator {
     font-size: 16px;
     color: #9aa5b8;
     margin-top: 4px;
+  }
+
+  .log-mini {
+    margin-top: 12px;
+    font-family: monospace;
+    font-size: 11px;
+    color: #7d8590;
+    text-align: center;
   }
 </style>
 </head>
@@ -388,7 +395,7 @@
 <div class="nav-header">
   <a href="/">← Torna al Menu Principale</a>
   <div style="display:flex; gap:10px; align-items:center;">
-    <a href="setlist.html" style="color:#25d366;">🎵 Scaletta Completa</a>
+    <a href="setlist.html" style="color:#25d366;">🎵 Scaletta & Testi</a>
     <select id="midiOutputSelect" style="background:#171a21; border:1px solid #333a46; color:#fff; font-size:12px; border-radius:4px; padding:4px 8px;">
       <option value="">Ricerca MIDI...</option>
     </select>
@@ -398,7 +405,7 @@
 <!-- CASE HARDWARE VOICELIVE 2 -->
 <div class="vl2-chassis">
 
-  <!-- FASCIA BRAND TC-HELICON / VOICELIVE 2 -->
+  <!-- BARRA LOGO -->
   <div class="brand-bar">
     <div class="brand-box">TC-HELICON</div>
     <div class="brand-vl2">VOICELIVE 2</div>
@@ -407,14 +414,31 @@
   <!-- PANNELLO SUPERIORE -->
   <div class="upper-panel">
     
-    <!-- TASTI FUNZIONE GOMMOSI + TONDI -->
+    <!-- TASTI FUNZIONE GOMMOSI CON COMANDI MIDI -->
     <div class="function-cluster">
       <div class="func-row">
-        <div class="btn-rubber active" id="btn-tone" onclick="toggleUpperBtn(this)"><div class="led-dot"></div><div class="btn-label">Tone</div></div>
-        <div class="btn-rubber active" id="btn-pitch" onclick="toggleUpperBtn(this)"><div class="led-dot"></div><div class="btn-label">Pitch</div></div>
-        <div class="btn-rubber" id="btn-gtr" onclick="toggleUpperBtn(this)"><div class="led-dot"></div><div class="btn-label">Guitar FX</div></div>
-        <div class="btn-rubber" id="btn-home" onclick="toggleUpperBtn(this)"><div class="led-dot"></div><div class="btn-label">Home</div></div>
+        <!-- TONE (Bypass CC 119) -->
+        <div class="btn-rubber" id="btn-tone" onclick="handleToneBtn()">
+          <div class="led-dot"></div>
+          <div class="btn-label">Tone</div>
+        </div>
+        <!-- PITCH (HardTune CC 113) -->
+        <div class="btn-rubber" id="btn-pitch" onclick="handlePitchBtn()">
+          <div class="led-dot"></div>
+          <div class="btn-label">Pitch</div>
+        </div>
+        <!-- GUITAR FX (CC 46 Boost/FX) -->
+        <div class="btn-rubber" id="btn-gtr" onclick="handleGuitarFxBtn()">
+          <div class="led-dot"></div>
+          <div class="btn-label">Guitar FX</div>
+        </div>
+        <!-- HOME (Re-sync Preset e display) -->
+        <div class="btn-rubber" id="btn-home" onclick="handleHomeBtn()">
+          <div class="led-dot"></div>
+          <div class="btn-label">Home</div>
+        </div>
       </div>
+
       <div class="round-btn-row">
         <div class="btn-round" onclick="loadPrevSong()">Setup</div>
         <div class="btn-round" onclick="loadNextSong()">Wizard</div>
@@ -423,7 +447,7 @@
       </div>
     </div>
 
-    <!-- SCHERMO LCD BLU ORIGINALE + 4 MANOPOLE MIX -->
+    <!-- DISPLAY LCD BLU -->
     <div class="lcd-assembly">
       <div class="lcd-screen">
         <div class="lcd-top-line">
@@ -440,7 +464,7 @@
         </div>
       </div>
 
-      <!-- 4 MINI MANOPOLE SOTTO IL DISPLAY -->
+      <!-- 4 MINI MANOPOLE -->
       <div class="knobs-row">
         <div class="knob-unit"><div class="knob-head"></div></div>
         <div class="knob-unit"><div class="knob-head"></div></div>
@@ -464,12 +488,11 @@
 
   </div>
 
-  <!-- PANNELLO PEDALI INFERIORE (10 FOOSWITCH IDENTICI ALLA FOTO) -->
+  <!-- PANNELLO FOOTSWITCH (10 PEDALI) -->
   <div class="footswitch-panel">
 
-    <!-- FILA SUPERIORE: PRESET ▲ | SHORTCUT | (divisore) | µMOD | DELAY | REVERB -->
+    <!-- FILA SUPERIORE -->
     <div class="stomp-row">
-      
       <!-- 1. PRESET UP -->
       <div class="stomp-unit" onclick="loadNextSong()">
         <div class="stomp-title">PRESET</div>
@@ -506,12 +529,10 @@
         <div class="stomp-subtitle" style="font-size:7px;">HOLD FOR MIC GAIN</div>
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
       </div>
-
     </div>
 
-    <!-- FILA INFERIORE: PRESET ▼ | STEP | (divisore) | HARMONY | DOUBLE | FX -->
+    <!-- FILA INFERIORE -->
     <div class="stomp-row">
-      
       <!-- 6. PRESET DOWN -->
       <div class="stomp-unit" onclick="loadPrevSong()">
         <div class="stomp-title">PRESET</div>
@@ -542,20 +563,21 @@
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
       </div>
 
-      <!-- 10. FX (CC 118 / Transducer / HardTune) -->
-      <div class="stomp-unit" id="stomp-118" onclick="toggleEffectCC(118)">
+      <!-- 10. FX (TRANSDUCER CC 115 - CORRETTO) -->
+      <div class="stomp-unit" id="stomp-115" onclick="toggleEffectCC(115)">
         <div class="stomp-title">FX</div>
         <div class="stomp-subtitle">TRANSDUCER / MOD</div>
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
       </div>
-
     </div>
 
   </div>
 
 </div>
 
-<!-- MODULI DI COMUNICAZIONE MIDI -->
+<div id="statusFeedback" class="log-mini">VoiceLive 2 Online.</div>
+
+<!-- MODULI MIDI CONDIVISI -->
 <script src="midi-core.js"></script>
 <script src="midi-manager.js"></script>
 
@@ -563,23 +585,29 @@
   let songs = [];
   let currentSongIndex = 0;
 
-  // Mappatura stato Effetti CC[cite: 8]
+  // Mappatura completa CC del VoiceLive 2[cite: 8]
   const fxStates = {
     110: false, // Harmony[cite: 8]
     111: false, // Double[cite: 8]
     112: false, // Reverb[cite: 8]
+    113: false, // HardTune / Pitch[cite: 8]
+    114: false, // Rhythmic[cite: 2]
+    115: false, // FX (Transducer)[cite: 2]
     116: false, // µMod[cite: 8]
     117: false, // Delay[cite: 8]
-    118: false  // FX / Transducer[cite: 8]
+    119: false, // Tone / Bypass[cite: 8]
+    46: false   // Guitar FX / Boost
   };
 
   window.addEventListener("load", async () => {
-    // 1. Inizializzazione Cavo USB / SK-7[cite: 11]
     await MidiManager.init("midiOutputSelect");
-
-    // 2. Carica la scaletta attiva da localStorage[cite: 12]
     loadSetlist();
   });
+
+  function setFeedback(msg) {
+    const el = document.getElementById("statusFeedback");
+    if (el) el.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  }
 
   function loadSetlist() {
     const saved = localStorage.getItem("voicelive_setlist");
@@ -606,13 +634,12 @@
     if (index < 0 || index >= songs.length) return;
     currentSongIndex = index;
     const song = songs[currentSongIndex];
-
     const presetNum = parseInt(song.preset, 10) || 1;
 
-    // 1. Invio Program Change al VoiceLive 2 via USB/Bluetooth[cite: 11, 12]
-    MidiManager.sendProgramChange(presetNum - 1); // Preset base 0 in MIDI[cite: 2, 11]
+    // Invio Program Change tramite MidiManager[cite: 11, 12]
+    MidiManager.sendProgramChange(presetNum - 1);[cite: 2, 11]
 
-    // 2. Aggiornamento LCD VoiceLive 2
+    // Aggiornamento interfaccia LCD
     document.getElementById("lcdPresetId").textContent = String(presetNum).padStart(3, '0');
     document.getElementById("lcdPresetTitle").textContent = (song.title || "UNTITLED").toUpperCase();
     
@@ -623,6 +650,8 @@
     document.getElementById("lcdNextSongTitle").textContent = nextSong 
       ? `NEXT: ${nextSong.title.substring(0, 14).toUpperCase()}` 
       : "END OF SETLIST";
+
+    setFeedback(`Canzone caricata: ${song.title} (Preset ${presetNum})`);
   }
 
   function loadNextSong() {
@@ -637,44 +666,87 @@
     applySongToUnit(prevIdx);
   }
 
-  // Toggle Effetti CC e Anello LED Rosso[cite: 8]
+  // GESTIONE PEDALI EFFETTI (Footswitches)[cite: 8]
   async function toggleEffectCC(cc) {
     fxStates[cc] = !fxStates[cc];
     const val = fxStates[cc] ? 127 : 0;
 
-    // Invio comando CC tramite MidiManager (Cavo USB)[cite: 11]
     if (MidiManager.activeOutput) {
-      MidiManager.sendControlChange(cc, val);
+      MidiManager.sendControlChange(cc, val);[cite: 11]
     }
 
-    // Aggiornamento grafico dell'anello halo rosso
     const stompEl = document.getElementById("stomp-" + cc);
     if (stompEl) {
       stompEl.classList.toggle("active", fxStates[cc]);
     }
+
+    setFeedback(`Inviato CC ${cc} = ${val} (Stato: ${fxStates[cc] ? 'ON' : 'OFF'})`);
   }
 
-  // Shortcut (HardTune CC 113)[cite: 8]
+  // 1. TONE (Bypass CC 119)[cite: 8]
+  function handleToneBtn() {
+    fxStates[119] = !fxStates[119];
+    const val = fxStates[119] ? 127 : 0;
+    if (MidiManager.activeOutput) {
+      MidiManager.sendControlChange(119, val);[cite: 11]
+    }
+    document.getElementById("btn-tone").classList.toggle("active", fxStates[119]);
+    setFeedback(`Tone / Bypass (CC 119): ${fxStates[119] ? 'ATTIVO' : 'DISATTIVATO'}`);
+  }
+
+  // 2. PITCH (HardTune CC 113)[cite: 8]
+  function handlePitchBtn() {
+    fxStates[113] = !fxStates[113];
+    const val = fxStates[113] ? 127 : 0;
+    if (MidiManager.activeOutput) {
+      MidiManager.sendControlChange(113, val);[cite: 11]
+    }
+    document.getElementById("btn-pitch").classList.toggle("active", fxStates[113]);
+    setFeedback(`Pitch Correction / HardTune (CC 113): ${fxStates[113] ? 'ON' : 'OFF'}`);
+  }
+
+  // 3. GUITAR FX (CC 46)
+  function handleGuitarFxBtn() {
+    fxStates[46] = !fxStates[46];
+    const val = fxStates[46] ? 127 : 0;
+    if (MidiManager.activeOutput) {
+      MidiManager.sendControlChange(46, val);[cite: 11]
+    }
+    document.getElementById("btn-gtr").classList.toggle("active", fxStates[46]);
+    setFeedback(`Guitar FX / Boost (CC 46): ${fxStates[46] ? 'ON' : 'OFF'}`);
+  }
+
+  // 4. HOME (Re-sync immediato del preset)[cite: 11]
+  function handleHomeBtn() {
+    const homeBtn = document.getElementById("btn-home");
+    homeBtn.classList.add("active");
+
+    // Invia nuovamente il Program Change del brano corrente[cite: 11, 12]
+    applySongToUnit(currentSongIndex);
+
+    setTimeout(() => {
+      homeBtn.classList.remove("active");
+    }, 400);
+
+    setFeedback(`HOME: Preset ${songs[currentSongIndex].preset} riallineato sul VoiceLive 2.`);
+  }
+
+  // SHORTCUT (HardTune / Tap)[cite: 8]
   let shortcutActive = false;
   function toggleShortcut() {
     shortcutActive = !shortcutActive;
     if (MidiManager.activeOutput) {
-      MidiManager.sendControlChange(113, shortcutActive ? 127 : 0);
+      MidiManager.sendControlChange(113, shortcutActive ? 127 : 0);[cite: 11]
     }
     document.getElementById("stomp-shortcut").classList.toggle("active", shortcutActive);
   }
 
-  // Step Switch (Simulazione step / Bridge)
-  let stepActive = false;
+  // STEP SWITCH
   function handleStep() {
-    stepActive = !stepActive;
     const el = document.getElementById("stomp-step");
     el.classList.add("active");
     setTimeout(() => el.classList.remove("active"), 200);
-  }
-
-  function toggleUpperBtn(el) {
-    el.classList.toggle("active");
+    setFeedback("Step / Bridge inviato.");
   }
 </script>
 
