@@ -382,7 +382,7 @@
     border-radius: 8px;
     padding: 6px 12px;
     font-family: monospace;
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1.4;
     color: #52c8ff;
     overflow: hidden;
@@ -390,6 +390,13 @@
     flex-direction: column;
     justify-content: center;
     box-sizing: border-box;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .log-line {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 </style>
 </head>
@@ -561,7 +568,7 @@
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
       </div>
 
-      <!-- 10. FX (CC 118 - TRANSDUCER / RHYTHMIC UFFICIALE VL2) -->
+      <!-- 10. FX (CC 118 - TRANSDUCER / RHYTHMIC) -->
       <div class="stomp-unit" id="stomp-118" onclick="toggleEffectCC(118)">
         <div class="stomp-title">FX</div>
         <div class="stomp-subtitle">TRANSDUCER / MOD</div>
@@ -575,8 +582,8 @@
 
 <!-- FINESTRA LOG A 2 RIGHE -->
 <div class="log-box-2lines" id="logBox">
-  <div>[SISTEMA] VoiceLive 2 Virtual Unit Caricata.</div>
-  <div>Seleziona un'interfaccia MIDI per iniziare...</div>
+  <div class="log-line" id="logLine1">[SISTEMA] VoiceLive 2 Virtual Unit Caricata.</div>
+  <div class="log-line" id="logLine2">Seleziona un'interfaccia MIDI per iniziare...</div>
 </div>
 
 <!-- MODULI MIDI CONDIVISI -->
@@ -588,45 +595,72 @@
   let currentSongIndex = 0;
   const logLines = ["VoiceLive 2 Online.", "In attesa di comandi MIDI..."];
 
-  // Tabella stati effetti per i soli CC ufficiali del VoiceLive 2[cite: 8]
   const fxStates = {
-    110: false, // Harmony[cite: 8]
-    111: false, // Double[cite: 8]
-    112: false, // Reverb[cite: 8]
-    114: false, // Bypass / Shortcut[cite: 8]
-    116: false, // uMod[cite: 8]
-    117: false, // Delay[cite: 8]
-    118: false  // FX / Transducer[cite: 8]
+    110: false,
+    111: false,
+    112: false,
+    114: false,
+    116: false,
+    117: false,
+    118: false
   };
 
   function logAction(msg) {
     const time = new Date().toLocaleTimeString();
-    logLines.push(`[${time}] ${msg}`);
+    logLines.push("[" + time + "] " + msg);
     if (logLines.length > 2) logLines.shift();
-    const box = document.getElementById("logBox");
-    if (box) {
-      box.innerHTML = `<div>${logLines[0]}</div><div>${logLines[1]}</div>`;
+    const l1 = document.getElementById("logLine1");
+    const l2 = document.getElementById("logLine2");
+    if (l1 && l2) {
+      l1.textContent = logLines[0];
+      l2.textContent = logLines[1];
     }
+  }
+
+  function safeSendCC(cc, val) {
+    try {
+      if (window.MidiManager && MidiManager.activeOutput && typeof MidiManager.sendControlChange === "function") {
+        MidiManager.sendControlChange(cc, val);
+        return true;
+      }
+    } catch (e) {
+      console.warn("Errore MIDI CC:", e);
+    }
+    return false;
+  }
+
+  function safeSendPC(pc) {
+    try {
+      if (window.MidiManager && MidiManager.activeOutput && typeof MidiManager.sendProgramChange === "function") {
+        MidiManager.sendProgramChange(pc);
+        return true;
+      }
+    } catch (e) {
+      console.warn("Errore MIDI PC:", e);
+    }
+    return false;
   }
 
   window.addEventListener("load", async () => {
     try {
-      await MidiManager.init("midiOutputSelect", "midiStatus");[cite: 11]
-      logAction("MIDI Manager attivo (USB/BLE).");
+      if (window.MidiManager && typeof MidiManager.init === "function") {
+        await MidiManager.init("midiOutputSelect", "midiStatus");
+        logAction("MIDI Manager attivo (USB/BLE).");
+      }
     } catch (e) {
-      logAction("Errore MIDI: " + e.message);
+      logAction("Errore avvio MIDI: " + e.message);
     }
     loadSetlist();
   });
 
   function loadSetlist() {
-    const saved = localStorage.getItem("voicelive_setlist");[cite: 12]
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem("voicelive_setlist");
+      if (saved) {
         songs = JSON.parse(saved);
-      } catch (e) {
-        songs = [];
       }
+    } catch (e) {
+      songs = [];
     }
 
     if (!songs || songs.length === 0) {
@@ -646,24 +680,27 @@
     const song = songs[currentSongIndex];
     const presetNum = parseInt(song.preset, 10) || 1;
 
-    // Invio Program Change tramite MidiManager[cite: 11, 12]
-    if (MidiManager && MidiManager.activeOutput) {
-      MidiManager.sendProgramChange(presetNum - 1);[cite: 2, 11]
-    }
+    const sent = safeSendPC(presetNum - 1);
 
-    // Aggiornamento LCD VoiceLive 2
-    document.getElementById("lcdPresetId").textContent = String(presetNum).padStart(3, '0');
-    document.getElementById("lcdPresetTitle").textContent = (song.title || "UNTITLED").toUpperCase();
+    const elId = document.getElementById("lcdPresetId");
+    const elTitle = document.getElementById("lcdPresetTitle");
+    const elBank = document.getElementById("lcd-bank-label");
+    const elNext = document.getElementById("lcdNextSongTitle");
+
+    if (elId) elId.textContent = String(presetNum).padStart(3, "0");
+    if (elTitle) elTitle.textContent = (song.title || "UNTITLED").toUpperCase();
     
     const bankNumber = Math.floor((presetNum - 1) / 128) + 1;
-    document.getElementById("lcd-bank-label").textContent = `BANK ${bankNumber} - PRESET ${presetNum}`;
+    if (elBank) elBank.textContent = "BANK " + bankNumber + " - PRESET " + presetNum;
 
     const nextSong = songs[currentSongIndex + 1];
-    document.getElementById("lcdNextSongTitle").textContent = nextSong 
-      ? `NEXT: ${nextSong.title.substring(0, 14).toUpperCase()}` 
-      : "END OF SETLIST";
+    if (elNext) {
+      elNext.textContent = nextSong 
+        ? "NEXT: " + nextSong.title.substring(0, 14).toUpperCase() 
+        : "END OF SETLIST";
+    }
 
-    logAction(`Brano ${currentSongIndex + 1}/${songs.length}: ${song.title} (Preset ${presetNum})`);
+    logAction("Brano " + (currentSongIndex + 1) + "/" + songs.length + ": " + song.title + " (P" + presetNum + ")" + (sent ? "" : " [MIDI OFF]"));
   }
 
   function loadNextSong() {
@@ -678,63 +715,60 @@
     applySongToUnit(prevIdx);
   }
 
-  // CONTROLLO EFFETTI REALI TRAMITE CC UFFICIALI[cite: 8]
   function toggleEffectCC(cc) {
     fxStates[cc] = !fxStates[cc];
     const val = fxStates[cc] ? 127 : 0;
 
-    if (MidiManager && MidiManager.activeOutput) {
-      MidiManager.sendControlChange(cc, val);[cite: 11]
-    }
+    const sent = safeSendCC(cc, val);
 
     const stompEl = document.getElementById("stomp-" + cc);
     if (stompEl) {
       stompEl.classList.toggle("active", fxStates[cc]);
     }
 
-    // Se stiamo attivando il Bypass (CC 114), sincronizziamo anche il tasto Tone/Bypass in alto[cite: 8]
     if (cc === 114) {
       const toneBtn = document.getElementById("btn-tone");
       if (toneBtn) toneBtn.classList.toggle("active", fxStates[114]);
     }
 
-    const nomi = { 110: "Harmony", 111: "Double", 112: "Reverb", 114: "Bypass/Talk", 116: "uMod", 117: "Delay", 118: "FX/Transducer" };[cite: 8]
-    logAction(`${nomi[cc] || 'CC ' + cc} -> ${fxStates[cc] ? 'ON (127)' : 'OFF (0)'}`);
+    const nomi = { 110: "Harmony", 111: "Double", 112: "Reverb", 114: "Bypass/Talk", 116: "uMod", 117: "Delay", 118: "FX/Transducer" };
+    const label = nomi[cc] || ("CC " + cc);
+    logAction(label + " -> " + (fxStates[cc] ? "ON (127)" : "OFF (0)") + (sent ? "" : " [MIDI OFF]"));
   }
 
-  // Tasto Tone/Bypass superiore: invia CC 114[cite: 8]
   function handleToneBypass() {
-    toggleEffectCC(114);[cite: 8]
+    toggleEffectCC(114);
   }
 
-  // Tasto Home: riallinea il preset corrente sul VL2[cite: 11, 12]
   function handleHomeBtn() {
     const homeBtn = document.getElementById("btn-home");
-    homeBtn.classList.add("active");
+    if (homeBtn) homeBtn.classList.add("active");
     applySongToUnit(currentSongIndex);
-    setTimeout(() => homeBtn.classList.remove("active"), 250);
-    logAction(`HOME: Reset su preset ${songs[currentSongIndex].preset}`);
+    setTimeout(() => {
+      if (homeBtn) homeBtn.classList.remove("active");
+    }, 250);
+    logAction("HOME: Reset su preset " + songs[currentSongIndex].preset);
   }
 
-  // Tasti informativi (non hanno CC sul firmware VL2)
   function handlePitchInfo() {
     const btn = document.getElementById("btn-pitch");
-    btn.classList.toggle("active");
-    logAction("Pitch: Modifica da pannello VL2 (nessun CC MIDI dedicato).");
+    if (btn) btn.classList.toggle("active");
+    logAction("Pitch: Modifica da display VL2 (nessun CC dedicato).");
   }
 
   function handleGuitarInfo() {
     const btn = document.getElementById("btn-gtr");
-    btn.classList.toggle("active");
-    logAction("Guitar FX: Modifica da pannello VL2 (nessun CC MIDI dedicato).");
+    if (btn) btn.classList.toggle("active");
+    logAction("Guitar FX: Modifica da display VL2 (nessun CC dedicato).");
   }
 
-  // Step Switch
   function handleStep() {
     const el = document.getElementById("stomp-step");
-    el.classList.add("active");
-    setTimeout(() => el.classList.remove("active"), 200);
-    logAction("Step Switch inviato.");
+    if (el) el.classList.add("active");
+    setTimeout(() => {
+      if (el) el.classList.remove("active");
+    }, 200);
+    logAction("Step Switch premuto.");
   }
 </script>
 
