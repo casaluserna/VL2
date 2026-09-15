@@ -118,7 +118,7 @@
     .btn-save-notes { background:#1e3a5f; color:#93c5fd; border-color:#2b4c7e; min-height:44px; font-size:14px; margin-top:8px; display:none; }
     .btn-undo-notes { background:#4a3520; color:#ffd28a; border-color:#76572d; min-height:44px; font-size:14px; margin-top:8px; display:none; }
 
-    /* Input file invisibili ma presenti nel DOM (Fix blocco touch iOS/iPad) */
+    /* Input file invisibili (Fix blocco iOS) */
     .ios-file-input {
       position: absolute !important;
       left: -9999px !important;
@@ -311,7 +311,6 @@
     <button id="btnCancelEdit" class="btn-cancel" onclick="cancelEdit()">Annulla Modifica</button>
   </div>
 
-  <!-- SEZIONE BACKUP / RIPRISTINO CON FIX IPAD -->
   <div class="section">
     <label>Brani Memorizzati</label>
     <div id="songsContainer"></div>
@@ -321,7 +320,6 @@
     <label>Backup & Ripristino Scaletta</label>
     <div class="backup-grid">
       <button class="btn-backup" onclick="exportSetlist()">💾 Esporta (.JSON)</button>
-      <!-- Il label funge da pulsante nativo touch senza blocchi JS -->
       <label for="importFile" class="btn-backup">📂 Importa (.JSON)</label>
     </div>
     <input 
@@ -433,7 +431,6 @@
   async function loadSongsFromStorage() {
     setCloudStatus("CLOUD: CONTROLLO...", "syncing");
 
-    // 1. Prova prima a recuperare dal Cloud Firestore
     if (cloudDocRef) {
       try {
         const doc = await cloudDocRef.get();
@@ -453,7 +450,6 @@
       }
     }
 
-    // 2. Controllo localStorage
     const saved = localStorage.getItem("voicelive_setlist");
     if (saved) {
       try {
@@ -469,7 +465,6 @@
       }
     }
 
-    // 3. Fallback: carica scaletta_default.json
     try {
       log("Primo avvio: carico scaletta predefinita (.json)...");
       const res = await fetch(`scaletta_default.json?t=${Date.now()}`);
@@ -487,7 +482,6 @@
       console.warn("Nessun scaletta_default.json trovato nel repository.");
     }
 
-    // 4. Default minimo
     songs = [
       { 
         title: "Hotel California - Eagles", 
@@ -611,7 +605,7 @@
     const notes = notesInput.value.trim();
 
     if (!title || isNaN(preset) || preset < 1 || preset > 384) {
-      alert("Inserisci un titolo ed un preset valido (1-384).");
+      log("⚠️ Inserisci un titolo ed un preset valido (1-384).");
       return;
     }
 
@@ -660,18 +654,19 @@
     document.getElementById("btnCancelEdit").style.display = "none";
   }
 
+  // ELIMINAZIONE DIRETTA SENZA BLOCCO CONFIRM DI IOS
   function deleteSong(index) {
-    if (confirm(`Rimuovere "${songs[index].title}"?`)) {
-      songs.splice(index, 1);
-      saveSongsToStorage();
-      renderSongsUI();
-      if (editingIndex === index) resetForm();
-    }
+    const deletedTitle = songs[index] ? songs[index].title : "Brano";
+    songs.splice(index, 1);
+    saveSongsToStorage();
+    renderSongsUI();
+    if (editingIndex === index) resetForm();
+    log(`🗑️ Rimosso brano: "${deletedTitle}"`);
   }
 
   async function exportSetlist() {
     if (songs.length === 0) {
-      alert("La scaletta è vuota, non c'è nulla da esportare.");
+      log("⚠️ Scaletta vuota, nessun brano da esportare.");
       return;
     }
 
@@ -709,10 +704,12 @@
     log("Scaletta esportata nella cartella Download.");
   }
 
-  // IMPORTAZIONE ROBUSTA JSON COMPATIBILE CON IPAD E BROWSER IOS
+  // IMPORTAZIONE DIRETTA JSON SENZA BLOCCO CONFIRM DI IOS
   function importSetlist(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
+
+    log(`Caricamento del file: "${file.name}"...`);
 
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -721,42 +718,30 @@
         const list = Array.isArray(importedData) ? importedData : (importedData.songs || importedData.scaletta);
 
         if (Array.isArray(list) && list.length > 0) {
-          if (confirm(`Trovati ${list.length} brani. Vuoi sostituire la scaletta attuale?`)) {
-            songs = list.map((item, idx) => ({
-              title: item.title || item.nome || item.brano || `Traccia ${idx + 1}`,
-              preset: parseInt(item.preset || item.pc || (idx + 1), 10),
-              ytUrl: item.ytUrl || item.youtube || "",
-              notes: item.notes || item.note || ""
-            }));
-            saveSongsToStorage();
-            renderSongsUI();
-            resetForm();
-            alert(`Scaletta importata con successo (${songs.length} brani)!`);
-            log(`Importati ${songs.length} brani da ${file.name}`);
-          }
+          songs = list.map((item, idx) => ({
+            title: item.title || item.nome || item.brano || `Traccia ${idx + 1}`,
+            preset: parseInt(item.preset || item.pc || (idx + 1), 10),
+            ytUrl: item.ytUrl || item.youtube || "",
+            notes: item.notes || item.note || ""
+          }));
+          saveSongsToStorage();
+          renderSongsUI();
+          resetForm();
+          log(`✅ Scaletta importata con successo: ${songs.length} brani da "${file.name}"`);
         } else {
-          alert("Il file JSON non contiene un elenco di brani riconosciuto.");
+          log("⚠️ Il file JSON non contiene un elenco di brani valido.");
         }
       } catch (err) {
-        alert("Errore nella lettura del file JSON:\n" + err.message);
+        log("❌ Errore nella lettura del JSON: " + err.message);
       }
-      event.target.value = "";
     };
 
     reader.onerror = function() {
-      alert("Errore durante l'accesso al file da parte del browser.");
+      log("❌ Errore accesso al file da parte del browser iOS.");
     };
 
     reader.readAsText(file);
   }
-
-  // Reset del valore al tocco per permettere di ricaricare lo stesso file
-  ['importFile', 'lrcFileInput', 'newFormLrcFile'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('click', function() { this.value = null; });
-    }
-  });
 
   function parseLRC(lrcText) {
     const lines = lrcText.split('\n');
@@ -948,7 +933,7 @@
       
       log("Video/Audio YouTube caricato nel brano.");
     } else {
-      alert("Link YouTube non valido.");
+      log("⚠️ Link YouTube non valido.");
     }
   }
 
@@ -1157,7 +1142,6 @@
     const selectedSong = songs[activeSongIndex];
 
     if (selectedSong) {
-      // Invio Program Change tramite MidiManager
       MidiManager.sendProgramChange(selectedSong.preset - 1);
       log(`BRANO CARICATO: ${selectedSong.title} (Preset ${selectedSong.preset})`);
 
