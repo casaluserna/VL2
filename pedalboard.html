@@ -47,7 +47,7 @@
     font-weight: bold;
   }
 
-  /* TELAIO HARDWARE VOICELIVE 2 */
+  /* CHASSIS HARDWARE */
   .vl2-chassis {
     width: 100%;
     max-width: 900px;
@@ -59,7 +59,6 @@
     overflow: hidden;
   }
 
-  /* BARRA LOGO */
   .brand-bar {
     height: 24px;
     background: #0e1014;
@@ -103,7 +102,6 @@
     .upper-panel { grid-template-columns: 1fr; gap: 12px; }
   }
 
-  /* TASTI SUPERIORI GOMMOSI */
   .function-cluster {
     display: flex;
     flex-direction: column;
@@ -165,7 +163,7 @@
     cursor: pointer;
   }
 
-  /* DISPLAY LCD RETROILLUMINATO BLU */
+  /* DISPLAY LCD BLU */
   .lcd-assembly {
     display: flex;
     flex-direction: column;
@@ -218,7 +216,6 @@
     margin-top: 4px;
   }
 
-  /* 4 MANOPOLE MIX */
   .knobs-row {
     display: flex;
     gap: 16px;
@@ -239,7 +236,6 @@
     box-shadow: 0 2px 4px #000;
   }
 
-  /* JOG WHEEL */
   .jog-cluster {
     display: flex;
     flex-direction: column;
@@ -281,9 +277,7 @@
     cursor: pointer;
   }
 
-  /* =========================================================
-     PANNELLO FOOTSWITCH (10 PEDALI ORIGINALI)
-     ========================================================= */
+  /* PANNELLO PEDALI INFERIORE (10 PEDALI) */
   .footswitch-panel {
     padding: 24px 16px 20px;
     display: flex;
@@ -339,7 +333,6 @@
     min-height: 12px;
   }
 
-  /* ANELLO LED CIRCOLARE ROSSO */
   .stomp-ring {
     width: 62px;
     height: 62px;
@@ -378,11 +371,11 @@
     margin-top: 4px;
   }
 
-  /* FINESTRA LOG A 2 LINEE */
+  /* FINESTRA LOG A 2 RIGHE */
   .log-box-2lines {
     width: 100%;
     max-width: 900px;
-    height: 48px;
+    height: 52px;
     margin-top: 14px;
     background: #080a0d;
     border: 1px solid #232730;
@@ -413,7 +406,6 @@
   </div>
 </div>
 
-<!-- CASE HARDWARE VOICELIVE 2 -->
 <div class="vl2-chassis">
 
   <div class="brand-bar">
@@ -423,21 +415,25 @@
 
   <div class="upper-panel">
     
-    <!-- TASTI FUNZIONE GOMMOSI -->
+    <!-- TASTI SUPERIORI -->
     <div class="function-cluster">
       <div class="func-row">
-        <div class="btn-rubber" id="btn-tone" onclick="handleToneBtn()">
+        <!-- TONE / BYPASS (CC 114) -->
+        <div class="btn-rubber" id="btn-tone" onclick="handleToneBypass()">
           <div class="led-dot"></div>
-          <div class="btn-label">Tone</div>
+          <div class="btn-label">Tone/Bypass</div>
         </div>
-        <div class="btn-rubber" id="btn-pitch" onclick="handlePitchBtn()">
+        <!-- PITCH -->
+        <div class="btn-rubber" id="btn-pitch" onclick="handlePitchInfo()">
           <div class="led-dot"></div>
           <div class="btn-label">Pitch</div>
         </div>
-        <div class="btn-rubber" id="btn-gtr" onclick="handleGuitarFxBtn()">
+        <!-- GUITAR FX -->
+        <div class="btn-rubber" id="btn-gtr" onclick="handleGuitarInfo()">
           <div class="led-dot"></div>
           <div class="btn-label">Guitar FX</div>
         </div>
+        <!-- HOME (Riallinea Preset) -->
         <div class="btn-rubber" id="btn-home" onclick="handleHomeBtn()">
           <div class="led-dot"></div>
           <div class="btn-label">Home</div>
@@ -447,7 +443,7 @@
       <div class="round-btn-row">
         <div class="btn-round" onclick="loadPrevSong()">Setup</div>
         <div class="btn-round" onclick="loadNextSong()">Wizard</div>
-        <div class="btn-round" onclick="logAction('Preset salvato in memoria.')">Store</div>
+        <div class="btn-round" onclick="logAction('Preset sincronizzato con VL2.')">Store</div>
         <div class="btn-round" onclick="window.location.href='setlist.html'">Edit</div>
       </div>
     </div>
@@ -478,6 +474,7 @@
       </div>
     </div>
 
+    <!-- JOG WHEEL -->
     <div class="jog-cluster">
       <div class="jog-wheel" onclick="loadNextSong()">
         <div class="jog-center-dot"></div>
@@ -491,7 +488,7 @@
 
   </div>
 
-  <!-- PANNELLO FOOTSWITCH -->
+  <!-- PANNELLO FOOTSWITCH (10 PEDALI) -->
   <div class="footswitch-panel">
 
     <div class="stomp-row">
@@ -502,10 +499,10 @@
         <div class="arrow-indicator">▲</div>
       </div>
 
-      <!-- 2. SHORTCUT (CC 113) -->
-      <div class="stomp-unit" id="stomp-shortcut" onclick="toggleShortcut()">
+      <!-- 2. SHORTCUT (BYPASS / TALK CC 114) -->
+      <div class="stomp-unit" id="stomp-114" onclick="toggleEffectCC(114)">
         <div class="stomp-title">SHORTCUT</div>
-        <div class="stomp-subtitle">HARDTUNE</div>
+        <div class="stomp-subtitle">BYPASS / TALK</div>
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
       </div>
 
@@ -564,8 +561,8 @@
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
       </div>
 
-      <!-- 10. FX (CC 115) -->
-      <div class="stomp-unit" id="stomp-115" onclick="toggleEffectCC(115)">
+      <!-- 10. FX (CC 118 - TRANSDUCER / RHYTHMIC UFFICIALE VL2) -->
+      <div class="stomp-unit" id="stomp-118" onclick="toggleEffectCC(118)">
         <div class="stomp-title">FX</div>
         <div class="stomp-subtitle">TRANSDUCER / MOD</div>
         <div class="stomp-ring"><div class="stomp-metal-plunger"></div></div>
@@ -576,10 +573,10 @@
 
 </div>
 
-<!-- FINESTRA LOG A 2 LINEE -->
+<!-- FINESTRA LOG A 2 RIGHE -->
 <div class="log-box-2lines" id="logBox">
-  <div>[SISTEMA] VoiceLive 2 Pronto.</div>
-  <div>In attesa di comandi MIDI...</div>
+  <div>[SISTEMA] VoiceLive 2 Virtual Unit Caricata.</div>
+  <div>Seleziona un'interfaccia MIDI per iniziare...</div>
 </div>
 
 <!-- MODULI MIDI CONDIVISI -->
@@ -589,18 +586,17 @@
 <script>
   let songs = [];
   let currentSongIndex = 0;
-  const logLines = ["VoiceLive 2 Online.", "In attesa di comandi..."];
+  const logLines = ["VoiceLive 2 Online.", "In attesa di comandi MIDI..."];
 
+  // Tabella stati effetti per i soli CC ufficiali del VoiceLive 2[cite: 8]
   const fxStates = {
-    110: false,
-    111: false,
-    112: false,
-    113: false,
-    115: false,
-    116: false,
-    117: false,
-    119: false,
-    46: false
+    110: false, // Harmony[cite: 8]
+    111: false, // Double[cite: 8]
+    112: false, // Reverb[cite: 8]
+    114: false, // Bypass / Shortcut[cite: 8]
+    116: false, // uMod[cite: 8]
+    117: false, // Delay[cite: 8]
+    118: false  // FX / Transducer[cite: 8]
   };
 
   function logAction(msg) {
@@ -615,16 +611,16 @@
 
   window.addEventListener("load", async () => {
     try {
-      await MidiManager.init("midiOutputSelect", "midiStatus");
-      logAction("MIDI Manager inizializzato.");
+      await MidiManager.init("midiOutputSelect", "midiStatus");[cite: 11]
+      logAction("MIDI Manager attivo (USB/BLE).");
     } catch (e) {
-      logAction("Errore avvio MIDI: " + e.message);
+      logAction("Errore MIDI: " + e.message);
     }
     loadSetlist();
   });
 
   function loadSetlist() {
-    const saved = localStorage.getItem("voicelive_setlist");
+    const saved = localStorage.getItem("voicelive_setlist");[cite: 12]
     if (saved) {
       try {
         songs = JSON.parse(saved);
@@ -650,12 +646,12 @@
     const song = songs[currentSongIndex];
     const presetNum = parseInt(song.preset, 10) || 1;
 
-    // Invia Program Change
+    // Invio Program Change tramite MidiManager[cite: 11, 12]
     if (MidiManager && MidiManager.activeOutput) {
-      MidiManager.sendProgramChange(presetNum - 1);
+      MidiManager.sendProgramChange(presetNum - 1);[cite: 2, 11]
     }
 
-    // Aggiorna LCD
+    // Aggiornamento LCD VoiceLive 2
     document.getElementById("lcdPresetId").textContent = String(presetNum).padStart(3, '0');
     document.getElementById("lcdPresetTitle").textContent = (song.title || "UNTITLED").toUpperCase();
     
@@ -667,7 +663,7 @@
       ? `NEXT: ${nextSong.title.substring(0, 14).toUpperCase()}` 
       : "END OF SETLIST";
 
-    logAction(`Canzone ${currentSongIndex + 1}/${songs.length}: ${song.title} (Preset ${presetNum})`);
+    logAction(`Brano ${currentSongIndex + 1}/${songs.length}: ${song.title} (Preset ${presetNum})`);
   }
 
   function loadNextSong() {
@@ -682,12 +678,13 @@
     applySongToUnit(prevIdx);
   }
 
+  // CONTROLLO EFFETTI REALI TRAMITE CC UFFICIALI[cite: 8]
   function toggleEffectCC(cc) {
     fxStates[cc] = !fxStates[cc];
     const val = fxStates[cc] ? 127 : 0;
 
     if (MidiManager && MidiManager.activeOutput) {
-      MidiManager.sendControlChange(cc, val);
+      MidiManager.sendControlChange(cc, val);[cite: 11]
     }
 
     const stompEl = document.getElementById("stomp-" + cc);
@@ -695,62 +692,49 @@
       stompEl.classList.toggle("active", fxStates[cc]);
     }
 
-    logAction(`Pedale CC ${cc} -> ${fxStates[cc] ? 'ON (127)' : 'OFF (0)'}`);
-  }
-
-  function handleToneBtn() {
-    fxStates[119] = !fxStates[119];
-    const val = fxStates[119] ? 127 : 0;
-    if (MidiManager && MidiManager.activeOutput) {
-      MidiManager.sendControlChange(119, val);
+    // Se stiamo attivando il Bypass (CC 114), sincronizziamo anche il tasto Tone/Bypass in alto[cite: 8]
+    if (cc === 114) {
+      const toneBtn = document.getElementById("btn-tone");
+      if (toneBtn) toneBtn.classList.toggle("active", fxStates[114]);
     }
-    document.getElementById("btn-tone").classList.toggle("active", fxStates[119]);
-    logAction(`Tone / Bypass (CC 119): ${fxStates[119] ? 'ATTIVO' : 'OFF'}`);
+
+    const nomi = { 110: "Harmony", 111: "Double", 112: "Reverb", 114: "Bypass/Talk", 116: "uMod", 117: "Delay", 118: "FX/Transducer" };[cite: 8]
+    logAction(`${nomi[cc] || 'CC ' + cc} -> ${fxStates[cc] ? 'ON (127)' : 'OFF (0)'}`);
   }
 
-  function handlePitchBtn() {
-    fxStates[113] = !fxStates[113];
-    const val = fxStates[113] ? 127 : 0;
-    if (MidiManager && MidiManager.activeOutput) {
-      MidiManager.sendControlChange(113, val);
-    }
-    document.getElementById("btn-pitch").classList.toggle("active", fxStates[113]);
-    logAction(`Pitch / HardTune (CC 113): ${fxStates[113] ? 'ON' : 'OFF'}`);
+  // Tasto Tone/Bypass superiore: invia CC 114[cite: 8]
+  function handleToneBypass() {
+    toggleEffectCC(114);[cite: 8]
   }
 
-  function handleGuitarFxBtn() {
-    fxStates[46] = !fxStates[46];
-    const val = fxStates[46] ? 127 : 0;
-    if (MidiManager && MidiManager.activeOutput) {
-      MidiManager.sendControlChange(46, val);
-    }
-    document.getElementById("btn-gtr").classList.toggle("active", fxStates[46]);
-    logAction(`Guitar FX Boost (CC 46): ${fxStates[46] ? 'ON' : 'OFF'}`);
-  }
-
+  // Tasto Home: riallinea il preset corrente sul VL2[cite: 11, 12]
   function handleHomeBtn() {
     const homeBtn = document.getElementById("btn-home");
     homeBtn.classList.add("active");
     applySongToUnit(currentSongIndex);
-    setTimeout(() => homeBtn.classList.remove("active"), 300);
+    setTimeout(() => homeBtn.classList.remove("active"), 250);
     logAction(`HOME: Reset su preset ${songs[currentSongIndex].preset}`);
   }
 
-  let shortcutActive = false;
-  function toggleShortcut() {
-    shortcutActive = !shortcutActive;
-    if (MidiManager && MidiManager.activeOutput) {
-      MidiManager.sendControlChange(113, shortcutActive ? 127 : 0);
-    }
-    document.getElementById("stomp-shortcut").classList.toggle("active", shortcutActive);
-    logAction(`Shortcut (CC 113): ${shortcutActive ? 'ON' : 'OFF'}`);
+  // Tasti informativi (non hanno CC sul firmware VL2)
+  function handlePitchInfo() {
+    const btn = document.getElementById("btn-pitch");
+    btn.classList.toggle("active");
+    logAction("Pitch: Modifica da pannello VL2 (nessun CC MIDI dedicato).");
   }
 
+  function handleGuitarInfo() {
+    const btn = document.getElementById("btn-gtr");
+    btn.classList.toggle("active");
+    logAction("Guitar FX: Modifica da pannello VL2 (nessun CC MIDI dedicato).");
+  }
+
+  // Step Switch
   function handleStep() {
     const el = document.getElementById("stomp-step");
     el.classList.add("active");
     setTimeout(() => el.classList.remove("active"), 200);
-    logAction("Step Switch premuto.");
+    logAction("Step Switch inviato.");
   }
 </script>
 
