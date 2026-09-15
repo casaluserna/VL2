@@ -23,14 +23,14 @@
       --yt-red:#ff0000;
       --border:#30353f; 
     }
-    * { box-sizing:border-box; }
+    * { box-sizing:border-box; touch-action: manipulation; }
     html, body { width: 100%; min-height: 100vh; margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: Arial, sans-serif; }
     body { padding: 18px; }
     
     .container { max-width: 900px; margin: auto; transition: max-width 0.3s ease; }
     
     .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    a.back { color:var(--blue); text-decoration:none; font-size:14px; }
+    a.back { color:var(--blue); text-decoration:none; font-size:14px; font-weight:bold; }
     .cloud-badge { font-size:11px; font-weight:bold; padding:4px 8px; border-radius:6px; background:#20242c; border:1px solid var(--border); color:var(--dim); }
     .cloud-badge.syncing { background:#452205; color:var(--orange); border-color:#78350f; }
     .cloud-badge.synced { background:#143823; color:#86efac; border-color:#166534; }
@@ -51,7 +51,21 @@
     .btn-lyrics { background:#3d2b56; color:#d8b4fe; border-color:#5b3e82; display:block; text-align:center; text-decoration:none; line-height:48px; margin-bottom:10px; }
     
     .backup-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:5px; }
-    .btn-backup { background:#2a3342; border-color:#3b475a; color:#d1d5db; min-height:44px; font-size:14px; }
+    .btn-backup { 
+      background:#2a3342; 
+      border: 1px solid #3b475a; 
+      color:#d1d5db; 
+      min-height:44px; 
+      font-size:14px; 
+      border-radius:10px; 
+      font-weight:bold; 
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+    }
+    .btn-backup:active { transform:scale(0.98); }
 
     .nav-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
     .btn-nav { min-height:55px; font-size:18px; background:#20242c; border-color:#3d8bfd; }
@@ -104,6 +118,15 @@
     .btn-save-notes { background:#1e3a5f; color:#93c5fd; border-color:#2b4c7e; min-height:44px; font-size:14px; margin-top:8px; display:none; }
     .btn-undo-notes { background:#4a3520; color:#ffd28a; border-color:#76572d; min-height:44px; font-size:14px; margin-top:8px; display:none; }
 
+    /* Input file invisibili ma presenti nel DOM (Fix blocco touch iOS/iPad) */
+    .ios-file-input {
+      position: absolute !important;
+      left: -9999px !important;
+      opacity: 0 !important;
+      width: 1px !important;
+      height: 1px !important;
+    }
+
     /* Modalità Schermo Intero */
     .fullscreen-mode #notesContainer {
       position: fixed;
@@ -151,7 +174,7 @@
 
 <div class="container">
   <div class="header-row">
-    <a href="/">Torna al Menu' Principale</a>
+    <a href="/" class="back">← Torna al Menu' Principale</a>
     <span id="cloudStatus" class="cloud-badge">CLOUD: INIT</span>
   </div>
   
@@ -163,7 +186,7 @@
   </div>
 
   <div class="section">
-    <label for="midiOutputSelect"><strong>Interfaccia MIDI (Cavo USB / Bluetooth)</strong></label>
+    <label for="midiOutputSelect"><strong>Interfaccia MIDI (Cavo USB / Bluetooth SK-7)</strong></label>
     <select id="midiOutputSelect">
       <option value="">Ricerca dispositivi...</option>
     </select>
@@ -213,8 +236,8 @@
         </div>
 
         <div class="notes-controls">
-          <button class="btn-load-lrc" onclick="document.getElementById('lrcFileInput').click()">📂 Carica .LRC</button>
-          <input type="file" id="lrcFileInput" accept=".lrc,.txt" style="display:none;" onchange="handleLrcFileUpload(event)">
+          <label for="lrcFileInput" class="btn-load-lrc" style="display:inline-flex; align-items:center; justify-content:center; cursor:pointer;">📂 Carica .LRC</label>
+          <input type="file" id="lrcFileInput" class="ios-file-input" accept=".lrc,.txt,text/plain,*/*" onchange="handleLrcFileUpload(event)">
 
           <select id="timeOffsetSelect" class="font-select" style="background:#283545; border-color:#3d8bfd;" onchange="applyTimeOffset(this.value)">
             <option value="0" selected>Shift Timing: 0s</option>
@@ -278,8 +301,8 @@
     
     <div style="margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
       <label style="margin:0;">Testo / Note (Supporta file .LRC):</label>
-      <button class="btn-load-lrc" style="padding:4px 8px; min-height:28px;" onclick="document.getElementById('newFormLrcFile').click()">📂 Importa File .LRC</button>
-      <input type="file" id="newFormLrcFile" accept=".lrc,.txt" style="display:none;" onchange="handleNewFormLrcUpload(event)">
+      <label for="newFormLrcFile" class="btn-load-lrc" style="padding:4px 8px; min-height:28px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer;">📂 Importa File .LRC</label>
+      <input type="file" id="newFormLrcFile" class="ios-file-input" accept=".lrc,.txt,text/plain,*/*" onchange="handleNewFormLrcUpload(event)">
     </div>
 
     <textarea id="newNotes" placeholder="Note o testo in formato .lrc [00:10.00] Inizio canto..."></textarea>
@@ -288,6 +311,7 @@
     <button id="btnCancelEdit" class="btn-cancel" onclick="cancelEdit()">Annulla Modifica</button>
   </div>
 
+  <!-- SEZIONE BACKUP / RIPRISTINO CON FIX IPAD -->
   <div class="section">
     <label>Brani Memorizzati</label>
     <div id="songsContainer"></div>
@@ -297,9 +321,16 @@
     <label>Backup & Ripristino Scaletta</label>
     <div class="backup-grid">
       <button class="btn-backup" onclick="exportSetlist()">💾 Esporta (.JSON)</button>
-      <button class="btn-backup" onclick="document.getElementById('importFile').click()">📂 Importa (.JSON)</button>
+      <!-- Il label funge da pulsante nativo touch senza blocchi JS -->
+      <label for="importFile" class="btn-backup">📂 Importa (.JSON)</label>
     </div>
-    <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importSetlist(event)">
+    <input 
+      type="file" 
+      id="importFile" 
+      class="ios-file-input" 
+      accept=".json,application/json,text/plain,*/*" 
+      onchange="importSetlist(event)"
+    >
   </div>
 
   <div class="section">
@@ -422,7 +453,7 @@
       }
     }
 
-    // 2. Se il Cloud è vuoto o offline, controlla il localStorage
+    // 2. Controllo localStorage
     const saved = localStorage.getItem("voicelive_setlist");
     if (saved) {
       try {
@@ -438,7 +469,7 @@
       }
     }
 
-    // 3. Se anche localStorage è vuoto: carica scaletta_default.json dal repository
+    // 3. Fallback: carica scaletta_default.json
     try {
       log("Primo avvio: carico scaletta predefinita (.json)...");
       const res = await fetch(`scaletta_default.json?t=${Date.now()}`);
@@ -456,7 +487,7 @@
       console.warn("Nessun scaletta_default.json trovato nel repository.");
     }
 
-    // 4. Fallback estremo se non trova nulla
+    // 4. Default minimo
     songs = [
       { 
         title: "Hotel California - Eagles", 
@@ -538,7 +569,7 @@
   }
 
   function handleLrcFileUpload(event) {
-    const file = event.target.files[0];
+    const file = event.target.files && event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
@@ -556,7 +587,7 @@
   }
 
   function handleNewFormLrcUpload(event) {
-    const file = event.target.files[0];
+    const file = event.target.files && event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
@@ -678,32 +709,54 @@
     log("Scaletta esportata nella cartella Download.");
   }
 
+  // IMPORTAZIONE ROBUSTA JSON COMPATIBILE CON IPAD E BROWSER IOS
   function importSetlist(event) {
-    const file = event.target.files[0];
+    const file = event.target.files && event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = function(e) {
       try {
         const importedData = JSON.parse(e.target.result);
-        if (Array.isArray(importedData)) {
-          if (confirm("L'importazione sostituirà la tua scaletta attuale. Vuoi continuare?")) {
-            songs = importedData;
+        const list = Array.isArray(importedData) ? importedData : (importedData.songs || importedData.scaletta);
+
+        if (Array.isArray(list) && list.length > 0) {
+          if (confirm(`Trovati ${list.length} brani. Vuoi sostituire la scaletta attuale?`)) {
+            songs = list.map((item, idx) => ({
+              title: item.title || item.nome || item.brano || `Traccia ${idx + 1}`,
+              preset: parseInt(item.preset || item.pc || (idx + 1), 10),
+              ytUrl: item.ytUrl || item.youtube || "",
+              notes: item.notes || item.note || ""
+            }));
             saveSongsToStorage();
             renderSongsUI();
             resetForm();
-            alert("Scaletta importata con successo!");
+            alert(`Scaletta importata con successo (${songs.length} brani)!`);
+            log(`Importati ${songs.length} brani da ${file.name}`);
           }
         } else {
-          alert("Il file non contiene una scaletta valida.");
+          alert("Il file JSON non contiene un elenco di brani riconosciuto.");
         }
       } catch (err) {
-        alert("Errore nella lettura del file JSON: " + err.message);
+        alert("Errore nella lettura del file JSON:\n" + err.message);
       }
       event.target.value = "";
     };
+
+    reader.onerror = function() {
+      alert("Errore durante l'accesso al file da parte del browser.");
+    };
+
     reader.readAsText(file);
   }
+
+  // Reset del valore al tocco per permettere di ricaricare lo stesso file
+  ['importFile', 'lrcFileInput', 'newFormLrcFile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('click', function() { this.value = null; });
+    }
+  });
 
   function parseLRC(lrcText) {
     const lines = lrcText.split('\n');
@@ -1104,7 +1157,7 @@
     const selectedSong = songs[activeSongIndex];
 
     if (selectedSong) {
-      // Invia il Program Change tramite MidiManager
+      // Invio Program Change tramite MidiManager
       MidiManager.sendProgramChange(selectedSong.preset - 1);
       log(`BRANO CARICATO: ${selectedSong.title} (Preset ${selectedSong.preset})`);
 
