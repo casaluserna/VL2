@@ -5,13 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>VoiceLive 2 Control Hub</title>
   <style>
-    :root { --bg:#101216; --card:#191c22; --border:#30353f; --text:#fff; --blue:#3d8bfd; }
+    :root { 
+      --bg:#101216; 
+      --card:#191c22; 
+      --border:#30353f; 
+      --text:#fff; 
+      --dim:#9da3ad;
+      --blue:#3d8bfd; 
+      --accent:#ff9800;
+    }
+    * { box-sizing: border-box; touch-action: manipulation; }
     body { margin:0; background:var(--bg); color:var(--text); font-family:Arial,sans-serif; padding:20px; text-align:center; }
     .container { max-width:500px; margin:auto; }
     h1 { font-size:24px; margin-bottom:10px; }
-    p { color:#9da3ad; font-size:14px; margin-bottom:30px; }
+    p { color:var(--dim); font-size:14px; margin-bottom:16px; }
+
+    .info-box {
+      background:#161920;
+      border:1px solid var(--border);
+      border-left:4px solid var(--accent);
+      border-radius:10px;
+      padding:12px 14px;
+      margin-bottom:20px;
+      text-align:left;
+      font-size:13px;
+      line-height:1.45;
+      color:#c0c6d0;
+    }
+    .info-box strong { color:#fff; }
+
     .menu-grid { display:flex; flex-direction:column; gap:15px; }
-    .menu-card { background:var(--card); border:1px solid var(--border); padding:20px; border-radius:14px; text-decoration:none; color:var(--text); font-size:18px; font-weight:bold; display:block; transition:0.2s; }
+    .menu-card { 
+      background:var(--card); 
+      border:1px solid var(--border); 
+      padding:20px; 
+      border-radius:14px; 
+      text-decoration:none; 
+      color:var(--text); 
+      font-size:18px; 
+      font-weight:bold; 
+      display:block; 
+      transition:0.2s; 
+    }
     .menu-card:active { transform:scale(0.98); background:#20242c; }
   </style>
 </head>
@@ -20,6 +55,12 @@
   <div class="container">
     <h1>VoiceLive 2 Controller</h1>
     <p>Seleziona il modulo da utilizzare:</p>
+
+    <div class="info-box">
+      🔗 <strong>Hardware Supportato:</strong><br>
+      • <strong>Cavo USB 2-in-1:</strong> USB-B sul retro del VL2 → Type-C / Lightning su tablet.<br>
+      • <strong>Bluetooth SK-7:</strong> Connettori MIDI DIN 5-pin su MIDI IN/OUT del VL2.
+    </div>
 
     <div class="menu-grid">
       <a href="setlist.html" class="menu-card">
